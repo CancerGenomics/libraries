@@ -1,5 +1,7 @@
 package edu.unlp.medicine.r4j.core;
 
+import java.util.Random;
+
 import edu.unlp.medicine.r4j.utils.FileSystemUtils;
 import junit.framework.TestCase;
 
@@ -24,8 +26,9 @@ public class TestR4JCore extends TestCase{
 		}
 	}
 	
-	public void test4ExecuteFile(){
+	public double test4ExecuteFile(){
 		R4JFactory.getR4JInstance().executeFile("files4test\\ClusteringAndLogRankTestScript.txt");
+		return new Random().nextDouble();
 	}
 	
 	
