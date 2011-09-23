@@ -1,15 +1,17 @@
 package edu.unlp.medicine.r4j.core;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unlp.medicine.r4j.constants.OSDependentConstants;
-import edu.unlp.medicine.r4j.constants.RConstants;
 import edu.unlp.medicine.r4j.utils.FileSystemUtils;
 import edu.unlp.medicine.r4j.utils.RUtils;
 import edu.unlp.medicine.r4j.utils.StringUtils;
@@ -28,25 +30,29 @@ public class R4JSession {
 
 	String filePath;
 	BufferedWriter actualSessionFile;
-	R4J r4j;
+	String outputFilePath; 
+	
+	
 	private static Logger LOGGER = LoggerFactory.getLogger(R4J.class);
 
-	public R4JSession(String inputPath, String outputFileName) throws RException {
+	public R4JSession(String rFileNameForWritingTheScripts, String outputFileName) throws RException {
 		//variables
-		String outputFilePath="pathToOutputFile";
+		String varOutputFilePath="pathToOutputFile";
+		//end variables
 		
-		setInputPath(inputPath);
+		setRFilePathForWritingTheScripts(FileSystemUtils.completePathToUserFolder(rFileNameForWritingTheScripts));
 		
-		this.assignPathToUserHome(outputFilePath, outputFileName);
-		this.addStatement("sink("+outputFilePath+")");
+		outputFilePath = FileSystemUtils.completePathToUserFolder(outputFileName);
+		this.assignPathToUserHome(varOutputFilePath, outputFileName);
+		this.addStatement("sink("+varOutputFilePath+")");
 		
 	}
 	
 	public R4JSession(String path) throws RException {
-		setInputPath(path);
+		setRFilePathForWritingTheScripts(path);
 	}
 
-	public void setInputPath(String path) throws RException {
+	public void setRFilePathForWritingTheScripts(String path) throws RException {
 		filePath = path;
 		try {
 			actualSessionFile = new BufferedWriter(new FileWriter(path));
@@ -56,13 +62,36 @@ public class R4JSession {
 
 	}
 	
-	public void execute() throws RException {
+	
+	public List<String> execute() throws RException {
+		List<String> listOfResults = new ArrayList<String>();
 		try {
 			actualSessionFile.close();
-			R4JFactory.getR4JInstance().executeFile(filePath);
+			Process p = Runtime.getRuntime().exec(OSDependentConstants.PATH_TO_R + " -f " + filePath);
+			BufferedReader resultFile = new BufferedReader(new FileReader(outputFilePath));
+			
+			String[] resultParts={}; 
+			String line = resultFile.readLine();
+			String previousLine = resultFile.readLine();
+			while(line!=null){
+				if (line!="" && line!=OSDependentConstants.LINE_SEPARATOR){
+					previousLine = line;
+				}
+				line = resultFile.readLine();
+			}
+			if (previousLine!=null && previousLine.length()>=4){
+				String result = previousLine.substring(4);
+				resultParts = result.split(" ");
+			}
+			 
+			for (String value: resultParts) {
+				listOfResults.add(value);
+			}
+			return listOfResults;	
 		} catch (IOException e) {
 			throw new RException("The temporal file: " + filePath + " could not be closed");
 		}
+		
 	}
 	
 	public void addStatement(String line){
@@ -158,6 +187,8 @@ public class R4JSession {
         this.concat(pathInJavaFormat, pathPartsOfImageFile);
         this.addStatement("png(" + pathInJavaFormat + ")");
 	}
+	
+	
 	
 	
 	
