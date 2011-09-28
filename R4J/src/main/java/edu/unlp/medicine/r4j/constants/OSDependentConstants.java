@@ -13,4 +13,6 @@ public interface OSDependentConstants {
 	public String DOUBLE_QUOTE = "\"";
 	
 	public String LINE_SEPARATOR = "\n";
+	
+	public String BLANK_CHAR = " ";
 }
