@@ -75,6 +75,14 @@
 					<name>DropBox Local Repository</name>
 					<url>file://${dropbox.repo}</url>
 					<layout>default</layout>
+					<releases>
+						<enabled>true</enabled>
+						<updatePolicy>never</updatePolicy>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
 				</repository>
 			</repositories>
 		</profile>
