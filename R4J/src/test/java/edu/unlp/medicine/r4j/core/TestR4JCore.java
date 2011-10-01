@@ -25,12 +25,12 @@ public class TestR4JCore extends TestCase{
 		}
 	}
 	
-	public int testGetValue(){
+	public int testGetValue(String id){
 		//Variables
 		String recta="recta";
 		
 		try {
-			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSession("testGetValue2");
+			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSession("testGetValue" + id);
 			rj4Session.assign(recta, "c(1,2,3,4)");
 			List<String> result = rj4Session.getArrayValue(recta);
 			

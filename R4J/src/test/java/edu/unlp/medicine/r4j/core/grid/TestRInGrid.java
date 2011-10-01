@@ -10,7 +10,7 @@ public class TestRInGrid extends TestCase {
 		TestR4JCore test = new TestR4JCore();
 		int suma = 0;
 		for (int i = 0; i < 10; i++) {
-			suma = suma + test.testGetValue();
+			suma = suma + test.testGetValue(String.valueOf(i));
 		}
 		System.out.println(suma);
 	}
