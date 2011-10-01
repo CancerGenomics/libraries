@@ -25,7 +25,7 @@ public class TestR4JCore extends TestCase{
 		}
 	}
 	
-	public void testGetValue(){
+	public int testGetValue(){
 		//Variables
 		String recta="recta";
 		
@@ -35,9 +35,11 @@ public class TestR4JCore extends TestCase{
 			List<String> result = rj4Session.getArrayValue(recta);
 			
 			assertTrue(result.get(0).equals("1"));
-			rj4Session.close();
-		} catch (RException e) {
 			
+			rj4Session.close();
+			return new Integer(result.get(0));
+		} catch (RException e) {
+			return 0;
 		}
 	}
 	

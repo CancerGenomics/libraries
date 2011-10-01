@@ -8,9 +8,11 @@ public class TestRInGrid extends TestCase {
 	
 	public void testSencillo(){
 		TestR4JCore test = new TestR4JCore();
+		int suma = 0;
 		for (int i = 0; i < 10; i++) {
-			test.testBasico();
+			suma = suma + test.testGetValue();
 		}
+		System.out.println(suma);
 	}
 	
 	public void testCluster() throws RException{
