@@ -19,7 +19,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- ESTA PROPIEDAD HAY QUE SETEARLA PARA CADA AMBIENTE -->
-		<dropbox.repo>C:/Hernan/Dropbox/Dropbox/BioPlat/m2repo/</dropbox.repo>
+<!-- 		<dropbox.repo>D:/Mis documentos/Dropbox/BioPlat/m2repo/</dropbox.repo> -->
+		<dropbox.repo>${env.DROPBOX_HOME}\BioPlat\m2repo\</dropbox.repo>
 	</properties>
 
 	<distributionManagement>
