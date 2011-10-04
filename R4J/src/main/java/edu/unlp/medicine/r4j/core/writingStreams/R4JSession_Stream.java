@@ -7,6 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -133,12 +135,12 @@ public class R4JSession_Stream {
 			actualSessionFile.write(line + "\n");
 			actualSessionFile.flush();
 
-			//BufferedWriter bw = new BufferedWriter(new
-			WritableByteChannel outChannel = Channels.newChannel(rProcess.getOutputStream());
 			
-			outChannel.write(ByteBuffer.wrap(line.getBytes()));
-			outChannel.write(ByteBuffer.wrap(OSDependentConstants.LINE_SEPARATOR.getBytes()));
-			//PrintWriter bw = new PrintWriter(new OutputStreamWriter(rProcess.getOutputStream()));
+			//WritableByteChannel outChannel = Channels.newChannel(rProcess.getOutputStream());
+			
+			//outChannel.write(ByteBuffer.wrap(line.getBytes()));
+			//outChannel.write(ByteBuffer.wrap(OSDependentConstants.LINE_SEPARATOR.getBytes()));
+			PrintWriter bw = new PrintWriter(new OutputStreamWriter(rProcess.getOutputStream()));
 
 			//bw.write(line);
 			

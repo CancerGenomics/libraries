@@ -147,9 +147,10 @@ public class R4JSession {
 
 	public void plotInFile(String imageFileName, String expressionToPlot) {
 		this.imageCreate(imageFileName);
-		this.addStatement("plot(" + expressionToPlot + ")");
+		this.addStatement("plot(" + expressionToPlot + ", col=c('red', 'blue', 'green', 'orange', 'yellow', 'brown'))");
 		this.imageRelease();
 	}
+
 
 	
 	public String sinkInto(String outputFilePath, boolean append) {
@@ -253,8 +254,16 @@ This method will get the second line and then pick up the second part of the spl
 			}
 			else{
 				rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-f " + expressionOrFilePath, null, new File(userHome));
+				if (!async) printStream(rProcess.getInputStream());
 			}
-			if (!async) rProcess.waitFor();
+			if (!async) {
+//				printStream(rProcess.getErrorStream());
+				//printStream(rProcess.getInputStream());
+				
+				
+				
+				rProcess.waitFor();
+			}
 
 			return rProcess;
 		} catch (IOException e) {
