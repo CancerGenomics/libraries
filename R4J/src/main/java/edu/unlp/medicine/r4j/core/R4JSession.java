@@ -30,20 +30,22 @@ import edu.unlp.medicine.r4j.utils.StringUtils;
  * program using the -f parameter passing the mentioned file as parameter. It is
  * important to mention that the R program is run on the working directory
  * System.getProperty("user.home"). So, the starting point of any relative path
- * used in R (including the R files executed) will be start in this path. 
+ * used in R (including the R files executed) will be start in this path.
  * 
  * The session creates a folder inside the System.getProperty("user.home")/R4J
- * folder. The name of this folder is a mandatory constructor parameter and this folder 
- * is known as UserFolder. In this folder you can find LOG.TXT with all the log of this 
- * session. RESULTS.txt with all the R output during this session. It is also the .rdata 
- * file which will be used to restore the workspace with the variables of the previous
- * flush() invokes.
+ * folder. The name of this folder is a mandatory constructor parameter and this
+ * folder is known as UserFolder. In this folder you can find LOG.TXT with all
+ * the log of this session. RESULTS.txt with all the R output during this
+ * session. It is also the .rdata file which will be used to restore the
+ * workspace with the variables of the previous flush() invokes.
  * 
- * Inside the UserFolder will be also a folder called R4J-session-<sessionId>Thread-<THREADID>. 
- * In this folder there will be one file per flush with the R statements executed in this flush.
+ * Inside the UserFolder will be also a folder called
+ * R4J-session-<sessionId>Thread-<THREADID>. In this folder there will be one
+ * file per flush with the R statements executed in this flush.
  * 
- * It is important to call flush every time you want to execute R statements. 
- * All the statements which returns something do flush automatically. For example getValue!!
+ * It is important to call flush every time you want to execute R statements.
+ * All the statements which returns something do flush automatically. For
+ * example getValue!!
  * 
  * @author Matias
  * 
@@ -57,17 +59,20 @@ public class R4JSession {
 	String nonFlushedScriptsFilePath;
 	BufferedWriter nonFlushedScriptsBufferedWriter;
 
-	//File path to the output results
+	// File path to the output results
 	String outputFilePath;
-	
+
 	// Session id to allow working with more than one session in the same
 	// thread.
 	static int sessionId = 0;
 
-	// This is a workaround. If i do executeRASExternalProgramWith-F() and then resetFile() then it doenst work. That is why there are 1 file for each flush.
+	// This is a workaround. If i do executeRASExternalProgramWith-F() and then
+	// resetFile() then it doenst work. That is why there are 1 file for each
+	// flush.
 	int scriptFileNumber = 0;
 
-	//This is the fileSystemUtils configured with the userFolderName received as constructor parameter.
+	// This is the fileSystemUtils configured with the userFolderName received
+	// as constructor parameter.
 	FileSystemUtils fileSystemUtils;
 
 	static String TEMP_FOLDER = "TMP";
@@ -83,21 +88,22 @@ public class R4JSession {
 	 */
 	public R4JSession(String userFolderName) throws RException {
 
-
 		try {
-			
-			fileSystemUtils = new FileSystemUtils(this.getTempFolderName4ThisSession() , userFolderName);
+
+			fileSystemUtils = new FileSystemUtils(this.getTempFolderName4ThisSession(), userFolderName);
 
 			// It sets the Log
 			String sessionScriptsLogPath = (fileSystemUtils.completePathToUserFolder(LOG_FILE_NAME));
 			sessionScriptsLogBufferedWriter = new BufferedWriter(new FileWriter(sessionScriptsLogPath));
 
-			// Initialize the bufferedWriter to keep the non executed scripts. Those scripts will be executed when calling flush() on this session.
+			// Initialize the bufferedWriter to keep the non executed scripts.
+			// Those scripts will be executed when calling flush() on this
+			// session.
 			nonFlushedScriptsFilePath = fileSystemUtils.completePathToTempFolder("scriptsForExecute-Thread" + Thread.currentThread().getId() + ".txt");
 			this.resetNonFlushedScriptsBufferedWriter();
 
 			// Sink into the resultFile recevied as parameter.
-			outputFilePath=fileSystemUtils.completePathToUserFolder(RESULTS_FILE_NAME);
+			outputFilePath = fileSystemUtils.completePathToUserFolder(RESULTS_FILE_NAME);
 			this.sinkInto(outputFilePath, false);
 
 		} catch (IOException e) {
@@ -106,7 +112,6 @@ public class R4JSession {
 		}
 
 	}
-
 
 	public void assign(String variableName, String expression) {
 		this.addStatement(variableName + "<-" + expression);
@@ -126,7 +131,6 @@ public class R4JSession {
 		this.addStatement(script.toString());
 	}
 
-	
 	public void assign(String variableName, List<String> array) {
 
 		StringBuilder rArray = new StringBuilder("");
@@ -151,8 +155,6 @@ public class R4JSession {
 		this.imageRelease();
 	}
 
-
-	
 	public String sinkInto(String outputFilePath, boolean append) {
 		// r variables
 		String rTemp = "RTemp";
@@ -163,41 +165,45 @@ public class R4JSession {
 		return outputFilePath;
 	}
 
-	
-/**
- * It flushes and then it runs R for executing the expression for querying the variable name. 
- * For reading the data it queries the rProcess.getInputStram(). It should be used for variables
- * holding single values (not arrays, not matrix).
- * @param variableName a variable with a single value.
- * @return The variable value in the R session. 
- * @throws RException
- */
+	/**
+	 * It flushes and then it runs R for executing the expression for querying
+	 * the variable name. For reading the data it queries the
+	 * rProcess.getInputStram(). It should be used for variables holding single
+	 * values (not arrays, not matrix).
+	 * 
+	 * @param variableName
+	 *            a variable with a single value.
+	 * @return The variable value in the R session.
+	 * @throws RException
+	 */
 	public String getSingleValue(String variableName) throws RException {
 		flush();
 		Process rProcessForGettingVariable = runRProcessForExecutingExpression(variableName, false);
 		return processRResponseForGettingSingleValue(rProcessForGettingVariable.getInputStream(), variableName);
 	}
-	
 
 	/**
-	 * It flushes and then it runs R for executing the expression for querying the variable name. 
-	 * For reading the data it queries the rProcess.getInputStram(). It should be used for variables
-	 * holding values in an array (not matrix).
-	 * @param variableName a variable with an array value.
-	 * @return The variable value in the R session. 
+	 * It flushes and then it runs R for executing the expression for querying
+	 * the variable name. For reading the data it queries the
+	 * rProcess.getInputStram(). It should be used for variables holding values
+	 * in an array (not matrix).
+	 * 
+	 * @param variableName
+	 *            a variable with an array value.
+	 * @return The variable value in the R session.
 	 * @throws RException
 	 */
-		public List<String> getArrayValue(String variableName) throws RException {
-			flush();
-			Process rProcessForGettingVariable = runRProcessForExecutingExpression(variableName, false);
-			
-			//printStream(rProcessForGettingVariable.getInputStream());
-			return processRResponseForGettingArrayValue(rProcessForGettingVariable.getInputStream(), variableName);
-		}
-	
-	private List<String> processRResponseForGettingArrayValue(InputStream rInputStream, String variableName)throws RException {
+	public List<String> getArrayValue(String variableName) throws RException {
+		flush();
+		Process rProcessForGettingVariable = runRProcessForExecutingExpression(variableName, false);
+
+		// printStream(rProcessForGettingVariable.getInputStream());
+		return processRResponseForGettingArrayValue(rProcessForGettingVariable.getInputStream(), variableName);
+	}
+
+	private List<String> processRResponseForGettingArrayValue(InputStream rInputStream, String variableName) throws RException {
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(rInputStream));
-		
+
 		List<String> result = new ArrayList<String>();
 		try {
 			System.out.println(bufferedReader.readLine());
@@ -207,26 +213,25 @@ public class R4JSession {
 			for (int i = 1; i < resultLineParts.length; i++) {
 				result.add(resultLineParts[i]);
 			}
-			
+
 			return result;
 		} catch (IOException e) {
 			throw new RException("It was not possible to read the variable " + variableName);
-		}
-		 catch (ArrayIndexOutOfBoundsException e) {
-				throw new RException("It was not possible to read the variable " + variableName);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RException("It was not possible to read the variable " + variableName);
 		}
 	}
 
-/**
- * R returns the result in the following way: 
-> result
-[1]	14
-This method will get the second line and then pick up the second part of the split using the blank char.
- * @param rInputStream 
- * @param variableName
- * @return
- * @throws RException
- */
+	/**
+	 * R returns the result in the following way: > result [1] 14 This method
+	 * will get the second line and then pick up the second part of the split
+	 * using the blank char.
+	 * 
+	 * @param rInputStream
+	 * @param variableName
+	 * @return
+	 * @throws RException
+	 */
 	private String processRResponseForGettingSingleValue(InputStream rInputStream, String variableName) throws RException {
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(rInputStream));
 		try {
@@ -235,33 +240,35 @@ This method will get the second line and then pick up the second part of the spl
 			return resultLine.split(OSDependentConstants.BLANK_CHAR)[1];
 		} catch (IOException e) {
 			throw new RException("It was not possible to read the variable " + variableName);
-		}
-		 catch (ArrayIndexOutOfBoundsException e) {
-				throw new RException("It was not possible to read the variable " + variableName);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RException("It was not possible to read the variable " + variableName);
 		}
 	}
 
 	private Process runRProcessForExecutingExpression(String expression, boolean async) throws RException {
 		return runRProcessForExecutingExpressionOrFile(expression, async, R_EXECUTION_MODE_ENUM.EXPRESSION);
 	}
-	
-	private Process runRProcessForExecutingExpressionOrFile(String expressionOrFilePath, boolean async, R_EXECUTION_MODE_ENUM executionMode) throws RException{
+
+	private Process runRProcessForExecutingExpressionOrFile(String expressionOrFilePath, boolean async, R_EXECUTION_MODE_ENUM executionMode) throws RException {
 		try {
 			String userHome = fileSystemUtils.getUserFolderPath();
-			Process rProcess ;
-			if (executionMode==R_EXECUTION_MODE_ENUM.EXPRESSION){
-				rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-e " + expressionOrFilePath, null, new File(userHome));	
-			}
-			else{
+			Process rProcess;
+			if (executionMode == R_EXECUTION_MODE_ENUM.EXPRESSION) {
+				rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-e " + expressionOrFilePath, null, new File(userHome));
+			} else {
 				rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-f " + expressionOrFilePath, null, new File(userHome));
-				if (!async) printStream(rProcess.getInputStream());
+
+				// WORKAROUND. If the input stream is full then the process
+				// doesnt finish and the process.waitFor() doesnt return.
+				// Considering that this statement is not for getting a value
+				// and i dont need the inputStream text, i "clean" it.
+				if (!async)
+					printStream(rProcess.getInputStream());
 			}
 			if (!async) {
-//				printStream(rProcess.getErrorStream());
-				//printStream(rProcess.getInputStream());
-				
-				
-				
+				// printStream(rProcess.getErrorStream());
+				// printStream(rProcess.getInputStream());
+
 				rProcess.waitFor();
 			}
 
@@ -269,18 +276,15 @@ This method will get the second line and then pick up the second part of the spl
 		} catch (IOException e) {
 			LOGGER.error("It was not possible to execute R.");
 			throw new RException("Error trying to execute the R process as external program");
-			
+
 		} catch (InterruptedException e) {
 			LOGGER.error("Problem executing R process");
 			throw new RException("Error trying to execute the R process as external program");
-			
-		} 
+
+		}
 
 	}
 
-
-	
-	
 	public void addStatementsOfTheFile(String filePath) {
 		BufferedReader br;
 		try {
@@ -309,35 +313,31 @@ This method will get the second line and then pick up the second part of the spl
 			nonFlushedScriptsBufferedWriter.close();
 			this.runRProcessForExecutingFile(nonFlushedScriptsFilePath, false);
 			this.preparNewFile();
-			
+
 		} catch (IOException e) {
 			throw new RException("The temporal file could not be closed");
 		}
 
 	}
 
-	
-
-
 	private void quit() {
 		this.addStatement("q()");
-		
+
 	}
 
-
-	private Process runRProcessForExecutingFile(String filePath, boolean async) throws RException{
-		return runRProcessForExecutingExpressionOrFile(filePath, async, R_EXECUTION_MODE_ENUM.FILE);		
+	private Process runRProcessForExecutingFile(String filePath, boolean async) throws RException {
+		return runRProcessForExecutingExpressionOrFile(filePath, async, R_EXECUTION_MODE_ENUM.FILE);
 	}
 
 	/**
-	 * It returns the string containing the r path and the common parameters for any r execution from R4J (-q and --save) 
-	 * @return 
+	 * It returns the string containing the r path and the common parameters for
+	 * any r execution from R4J (-q and --save)
+	 * 
+	 * @return
 	 */
-	private String getCommandStringForExecutingR(){
-		return OSDependentConstants.DOUBLE_QUOTE + OSDependentConstants.PATH_TO_R + OSDependentConstants.DOUBLE_QUOTE + " --save --restore -q "; 
+	private String getCommandStringForExecutingR() {
+		return OSDependentConstants.DOUBLE_QUOTE + OSDependentConstants.PATH_TO_R + OSDependentConstants.DOUBLE_QUOTE + " --save --restore -q ";
 	}
-
-	
 
 	public void addStatement(String line) {
 		try {
@@ -352,8 +352,6 @@ This method will get the second line and then pick up the second part of the spl
 		}
 	}
 
-
-
 	public void close() {
 		// fileSystemUtils.deleteWorkingDirectory();
 		try {
@@ -363,7 +361,6 @@ This method will get the second line and then pick up the second part of the spl
 			e.printStackTrace();
 		}
 	}
-	
 
 	private void assignPathToRTemp(String variableName, String filePath) {
 		List<String> pathParts = RUtils.getPathPartsOfAFile(filePath);
@@ -388,26 +385,24 @@ This method will get the second line and then pick up the second part of the spl
 	private void printStream(InputStream inputStream) {
 		InputStreamReader isr = new InputStreamReader(inputStream);
 		try {
-			//if (isr.ready()) {
+			// if (isr.ready()) {
 
-			
-			
-				BufferedReader errorStream = new BufferedReader(isr);
-				String line=errorStream.readLine();
-				while (line!=null){
-					System.out.println(line);
-					line=errorStream.readLine();
-				}
-				
-//				StringBuffer buffer = new StringBuffer();
-//				int ch;
-//
-//				while ((ch = errorStream.read()) > -1) {
-//					buffer.append((char) ch);
-//				}
-//				System.out.println(buffer.toString());
+			BufferedReader errorStream = new BufferedReader(isr);
+			String line = errorStream.readLine();
+			while (line != null) {
+				System.out.println(line);
+				line = errorStream.readLine();
+			}
 
-			//}
+			// StringBuffer buffer = new StringBuffer();
+			// int ch;
+			//
+			// while ((ch = errorStream.read()) > -1) {
+			// buffer.append((char) ch);
+			// }
+			// System.out.println(buffer.toString());
+
+			// }
 		} catch (IOException e) {
 
 			e.printStackTrace();
@@ -427,19 +422,17 @@ This method will get the second line and then pick up the second part of the spl
 
 	}
 
-
-
 	private String getTempFolderName4ThisSession() {
-		sessionId++;		
+		sessionId++;
 		return "R4J-session-" + sessionId + "Thread-" + Thread.currentThread().getId();
 	}
 
 	private void preparNewFile() {
 		this.resetNonFlushedScriptsBufferedWriter();
-		
+
 		this.sinkInto(outputFilePath, false);
 	}
-	
+
 	// public String getString(String libraryName){
 	// String libraryWithQuotes = StringUtils.addQuotes(libraryName);
 	// addScriptLine("load(" + libraryWithQuotes + ")");
@@ -456,5 +449,5 @@ This method will get the second line and then pick up the second part of the spl
 	// public getIntArray(){
 	//
 	// }
-	
+
 }
