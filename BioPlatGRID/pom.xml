@@ -5,7 +5,6 @@
 		<version>0.0.2-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-  <groupId>bioplat</groupId>
   <artifactId>BioPlatGRID</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <dependencies>
