@@ -4,8 +4,6 @@ import org.gridgain.grid.GridException;
 import org.gridgain.grid.GridFactory;
 import org.gridgain.grid.gridify.Gridify;
 
-import edu.unlp.medicine.r4j.core.grid.TestRInGrid;
-
 public class GridManager {
 
 	 /**
