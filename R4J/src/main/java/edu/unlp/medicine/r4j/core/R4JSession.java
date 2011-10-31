@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unlp.medicine.r4j.constants.OSDependentConstants;
+
 import edu.unlp.medicine.r4j.utils.FileSystemUtils;
 import edu.unlp.medicine.r4j.utils.RUtils;
 import edu.unlp.medicine.r4j.utils.StringUtils;
@@ -80,14 +81,52 @@ public class R4JSession {
 	static String RESULTS_FILE_NAME = "RESULTS.TXT";
 	private static Logger LOGGER = LoggerFactory.getLogger(R4J.class);
 
+
+	
 	/**
 	 * 
 	 * @param sessionScriptsLogFileName
 	 * @param resultsFileName
 	 * @throws RException
 	 */
-	public R4JSession(String userFolderName) throws RException {
+	public R4JSession(String sessionName) throws RException {
+			createFolderSessionUsingR4JDefaultFolder(sessionName);
+	
+	}
 
+	public R4JSession(String sessionName, String path) throws RException {
+		createFolderSessionUsingReceivedPath(path + OSDependentConstants.FILE_SEPARATOR + sessionName);
+}
+	
+	private void createFolderSessionUsingReceivedPath(String sessionAbsolutePath) {
+		
+		try {
+
+			// It sets the Log
+			String sessionScriptsLogPath =  sessionAbsolutePath + OSDependentConstants.FILE_SEPARATOR +  LOG_FILE_NAME;
+			sessionScriptsLogBufferedWriter = new BufferedWriter(new FileWriter(sessionScriptsLogPath));
+
+			// Initialize the bufferedWriter to keep the non executed scripts.
+			// Those scripts will be executed when calling flush() on this
+			// session.
+			nonFlushedScriptsFilePath = sessionAbsolutePath + OSDependentConstants.FILE_SEPARATOR +  "scriptsForExecute-Thread" + Thread.currentThread().getId() + ".txt";
+			this.resetNonFlushedScriptsBufferedWriter();
+
+			// Sink into the resultFile recevied as parameter.
+			outputFilePath = sessionAbsolutePath + OSDependentConstants.FILE_SEPARATOR +  RESULTS_FILE_NAME;
+			this.sinkInto(outputFilePath, false);
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+		
+	}
+
+
+
+	private void createFolderSessionUsingR4JDefaultFolder(String userFolderName) {
 		try {
 
 			fileSystemUtils = new FileSystemUtils(this.getTempFolderName4ThisSession(), userFolderName);
@@ -111,7 +150,10 @@ public class R4JSession {
 			e.printStackTrace();
 		}
 
+		
 	}
+
+
 
 	public void assign(String variableName, String expression) {
 		this.addStatement(variableName + "<-" + expression);

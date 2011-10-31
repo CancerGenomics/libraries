@@ -15,7 +15,7 @@ public class TestR4JCore extends TestCase{
 		String linea="linea";
 		
 		try {
-			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSession("testBasicoDiego");
+			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSession("testBasicoDiego2");
 			rj4Session.assign(linea, "c(1,2,2,2,1)");
 			rj4Session.plotInFile("LineaSencilla.png", linea);
 			rj4Session.flush();
