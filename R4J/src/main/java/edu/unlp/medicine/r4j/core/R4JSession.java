@@ -256,8 +256,9 @@ public class R4JSession {
 			if (executionMode == R_EXECUTION_MODE_ENUM.EXPRESSION) {
 				rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-e " + expressionOrFilePath, null, new File(userHome));
 			} else {
+				System.out.println(getCommandStringForExecutingR() + "-f " + expressionOrFilePath);
 				rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-f " + expressionOrFilePath, null, new File(userHome));
-
+					
 				// WORKAROUND. If the input stream is full then the process
 				// doesnt finish and the process.waitFor() doesnt return.
 				// Considering that this statement is not for getting a value
