@@ -5,6 +5,22 @@ import java.util.List;
 import junit.framework.TestCase;
 
 public class TestR4JCore extends TestCase{
+
+	public void testBasicoConPathAbsoluto() {
+		//Variables
+		String linea="linea";
+		
+		try {
+			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSession("testBasicoDiego2", "c:\\matias");
+			rj4Session.assign(linea, "c(1,2,2,2,1)");
+			rj4Session.plotInFile("LineaSencilla.png", linea);
+			rj4Session.flush();
+			rj4Session.close();
+		} catch (RException e) {
+			
+		}
+	}
+
 	
 	/**
 	 * It tests rj4session, the assign statement, the plotInFile and the flush.
