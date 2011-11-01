@@ -15,12 +15,13 @@ public class R4J {
 
 	private static Logger LOGGER = LoggerFactory.getLogger(R4J.class);
 
-/**
- * Execute a file with R scripts. 
- * @param userFolderName
- * @param filePathToExecuteWhenStart
- * @throws RException
- */
+	/**
+	 * Execute a file with R scripts.
+	 * 
+	 * @param userFolderName
+	 * @param filePathToExecuteWhenStart
+	 * @throws RException
+	 */
 	public void executeFile(String userFolderName, String filePathToExecuteWhenStart) throws RException {
 		R4JSession r4JSession = new R4JSession(userFolderName);
 		r4JSession.addStatementsOfTheFile(filePathToExecuteWhenStart);
@@ -48,18 +49,18 @@ public class R4J {
 			throw e;
 		}
 	}
-	
+
 	/**
-	 * It creates a clean RSession.
 	 * 
+	 * @param sessionName
+	 *            The name of the session. It will be used as the folder name.
 	 * @param path
-	 *            The path of the temporal file to write the scripts of the
-	 *            session.
-	 * @return It returns the session.
+	 *            The absolute path in which the folder with the session name
+	 *            will be created. This is used in case you want to use your own
+	 *            folder to keep the results instead of using the default r4j
+	 *            folder.
+	 * @return
 	 * @throws RException
-	 *             If there is any I/O problem trying to create the file the
-	 *             method will throw an RException and the session will not be
-	 *             created.
 	 */
 	public R4JSession getRSession(String sessionName, String path) throws RException {
 		try {
@@ -69,6 +70,5 @@ public class R4J {
 			throw e;
 		}
 	}
-	
 
 }
