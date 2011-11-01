@@ -1,23 +1,21 @@
 package edu.unlp.medicine.r4j.core;
 
 import java.io.BufferedReader;
-import edu.unlp.medicine.r4j.constants.R_EXECUTION_MODE_ENUM;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
+import edu.unlp.medicine.r4j.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unlp.medicine.r4j.constants.OSDependentConstants;
-
+import edu.unlp.medicine.r4j.constants.R_EXECUTION_MODE_ENUM;
 import edu.unlp.medicine.r4j.utils.FileManager;
 import edu.unlp.medicine.r4j.utils.FileSystemUtils;
 import edu.unlp.medicine.r4j.utils.RUtils;
@@ -82,7 +80,7 @@ public class R4JSession {
 	static String RESULTS_FILE_NAME = "RESULTS.TXT";
 	private static Logger LOGGER = LoggerFactory.getLogger(R4J.class);
 
-
+	
 	
 	/**
 	 * 
@@ -91,46 +89,17 @@ public class R4JSession {
 	 * @throws RException
 	 */
 	public R4JSession(String sessionName) throws RException {
-			createFolderSessionUsingR4JDefaultFolder(sessionName);
-	
+		fileSystemUtils = new FileSystemUtilsForDefaultR4JFolder(this.getTempFolderName4ThisSession(), sessionName);
+		createFolderSession();
 	}
 
 	public R4JSession(String sessionName, String path) throws RException {
-		createFolderSessionUsingReceivedPath(path + OSDependentConstants.FILE_SEPARATOR + sessionName);
+		fileSystemUtils = new FileSystemUtilsForAbsolutePath(this.getTempFolderName4ThisSession(), sessionName, path);
+		createFolderSession();
 }
 	
-	private void createFolderSessionUsingReceivedPath(String sessionAbsolutePath) {
-		
+	private void createFolderSession() {
 		try {
-
-			// It sets the Log
-			String sessionScriptsLogPath =  sessionAbsolutePath + OSDependentConstants.FILE_SEPARATOR +  LOG_FILE_NAME;
-			sessionScriptsLogBufferedWriter = FileManager.createFile(sessionScriptsLogPath);
-
-			// Initialize the bufferedWriter to keep the non executed scripts.
-			// Those scripts will be executed when calling flush() on this
-			// session.
-			nonFlushedScriptsFilePath = sessionAbsolutePath + OSDependentConstants.FILE_SEPARATOR +  "scriptsForExecute-Thread" + Thread.currentThread().getId() + ".txt";
-			this.resetNonFlushedScriptsBufferedWriter();
-
-			// Sink into the resultFile recevied as parameter.
-			outputFilePath = sessionAbsolutePath + OSDependentConstants.FILE_SEPARATOR +  RESULTS_FILE_NAME;
-			this.sinkInto(outputFilePath, false);
-
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}
-
-		
-	}
-
-
-
-	private void createFolderSessionUsingR4JDefaultFolder(String userFolderName) {
-		try {
-
-			fileSystemUtils = new FileSystemUtils(this.getTempFolderName4ThisSession(), userFolderName);
 
 			// It sets the Log
 			String sessionScriptsLogPath = (fileSystemUtils.completePathToUserFolder(LOG_FILE_NAME));

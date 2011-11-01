@@ -4,50 +4,40 @@ import java.io.File;
 
 import edu.unlp.medicine.r4j.constants.OSDependentConstants;
 
-public class FileSystemUtils {
+public abstract class FileSystemUtils {
 	
 	String r4jFolder = "R4J";
 	File r4jFolderFile;
 
 	String tempFolderName;
-	File tempFolderFile;
-	
 	String userFolderName;
-	File userFolderFile;
+	
 	
 	public FileSystemUtils(String tempFolderName, String userFolderName){
 		
 		this.tempFolderName = tempFolderName;
 		this.userFolderName = userFolderName;
 		
-		mkDir(OSDependentConstants.USER_HOME + OSDependentConstants.FILE_SEPARATOR + r4jFolder);
-		mkDir(this.getUserFolderPath());
-		mkDir(this.getTempFolderPath());
+//		mkDir(OSDependentConstants.USER_HOME + OSDependentConstants.FILE_SEPARATOR + r4jFolder);
+//		mkDir(this.getUserFolderPath());
+//		mkDir(this.getTempFolderPath());
 		
 		
 	}
 	
 
-	private void mkDir(String path) {
-		r4jFolderFile = new File(path);
-		r4jFolderFile.mkdir();
-	}
+//	private void mkDir(String path) {
+//		r4jFolderFile = new File(path);
+//		r4jFolderFile.mkdir();
+//	}
 
-	public String getUserFolderPath(){
-		return OSDependentConstants.USER_HOME + OSDependentConstants.FILE_SEPARATOR + r4jFolder + OSDependentConstants.FILE_SEPARATOR + userFolderName;
-	}
+	public abstract String getUserFolderPath();
 	
-	public String getTempFolderPath(){
-		return this.getUserFolderPath() + OSDependentConstants.FILE_SEPARATOR + tempFolderName;
-	}
+	public abstract String getTempFolderPath();
 	
-	public String completePathToUserFolder(String fileName){
-		return this.getUserFolderPath() + OSDependentConstants.FILE_SEPARATOR + fileName;
-	}
+	public abstract String completePathToUserFolder(String fileName);
 
-	public String completePathToTempFolder(String fileName){
-		return this.getTempFolderPath() + OSDependentConstants.FILE_SEPARATOR + fileName;
-	}
+	public abstract String completePathToTempFolder(String fileName);
 	
 	
 	
