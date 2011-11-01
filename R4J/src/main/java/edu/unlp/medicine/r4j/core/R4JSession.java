@@ -93,6 +93,7 @@ public class R4JSession {
 		createFolderSession();
 	}
 
+	
 	public R4JSession(String sessionName, String path) throws RException {
 		fileSystemUtils = new FileSystemUtilsForAbsolutePath(this.getTempFolderName4ThisSession(), sessionName, path);
 		createFolderSession();
