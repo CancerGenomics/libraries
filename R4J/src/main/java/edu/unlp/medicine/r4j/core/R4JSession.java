@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unlp.medicine.r4j.constants.OSDependentConstants;
 
+import edu.unlp.medicine.r4j.utils.FileManager;
 import edu.unlp.medicine.r4j.utils.FileSystemUtils;
 import edu.unlp.medicine.r4j.utils.RUtils;
 import edu.unlp.medicine.r4j.utils.StringUtils;
@@ -104,7 +105,7 @@ public class R4JSession {
 
 			// It sets the Log
 			String sessionScriptsLogPath =  sessionAbsolutePath + OSDependentConstants.FILE_SEPARATOR +  LOG_FILE_NAME;
-			sessionScriptsLogBufferedWriter = new BufferedWriter(new FileWriter(sessionScriptsLogPath));
+			sessionScriptsLogBufferedWriter = FileManager.createFile(sessionScriptsLogPath);
 
 			// Initialize the bufferedWriter to keep the non executed scripts.
 			// Those scripts will be executed when calling flush() on this
@@ -133,7 +134,7 @@ public class R4JSession {
 
 			// It sets the Log
 			String sessionScriptsLogPath = (fileSystemUtils.completePathToUserFolder(LOG_FILE_NAME));
-			sessionScriptsLogBufferedWriter = new BufferedWriter(new FileWriter(sessionScriptsLogPath));
+			sessionScriptsLogBufferedWriter = FileManager.createFile(sessionScriptsLogPath);
 
 			// Initialize the bufferedWriter to keep the non executed scripts.
 			// Those scripts will be executed when calling flush() on this
@@ -456,7 +457,7 @@ public class R4JSession {
 		try {
 			scriptFileNumber++;
 			nonFlushedScriptsFilePath = nonFlushedScriptsFilePath + scriptFileNumber;
-			nonFlushedScriptsBufferedWriter = new BufferedWriter(new FileWriter(nonFlushedScriptsFilePath));
+			nonFlushedScriptsBufferedWriter = FileManager.createFile(nonFlushedScriptsFilePath);
 
 		} catch (IOException e) {
 

@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unlp.medicine.r4j.constants.OSDependentConstants;
 import edu.unlp.medicine.r4j.core.RException;
+import edu.unlp.medicine.r4j.utils.FileManager;
 import edu.unlp.medicine.r4j.utils.FileSystemUtils;
 import edu.unlp.medicine.r4j.utils.RUtils;
 import edu.unlp.medicine.r4j.utils.StringUtils;
@@ -78,7 +79,7 @@ public class R4JSession_Stream {
 	public void setRFilePathForWritingTheScripts(String path) throws RException {
 		filePath = path;
 		try {
-			actualSessionFile = new BufferedWriter(new FileWriter(path));
+			actualSessionFile = FileManager.createFile(path);
 
 		} catch (IOException e) {
 			throw new RException("It is not possible to create the r temporal file: " + path);
