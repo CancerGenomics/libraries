@@ -16,7 +16,7 @@
     <dependency>
         <groupId>bioplat</groupId>
          <artifactId>R4J</artifactId>
-         <version>1.1.0-SNAPSHOT</version> <!-- CHANGE IT! -->
+         <version>1.2.0-SNAPSHOT</version> <!-- CHANGE IT! -->
     </dependency>
     
     
