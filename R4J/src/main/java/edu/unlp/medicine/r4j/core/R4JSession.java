@@ -10,16 +10,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import edu.unlp.medicine.r4j.utils.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unlp.medicine.r4j.constants.OSDependentConstants;
 import edu.unlp.medicine.r4j.constants.R_EXECUTION_MODE_ENUM;
-import edu.unlp.medicine.r4j.utils.FileManager;
 import edu.unlp.medicine.r4j.utils.FileSystemUtils;
+import edu.unlp.medicine.r4j.utils.FileSystemUtilsForAbsolutePath;
+import edu.unlp.medicine.r4j.utils.FileSystemUtilsForDefaultR4JFolder;
 import edu.unlp.medicine.r4j.utils.RUtils;
 import edu.unlp.medicine.r4j.utils.StringUtils;
+import edu.unlp.medicine.utils.FileManager;
 
 /**
  * It models an R session. The actual implementation writes a file in the path

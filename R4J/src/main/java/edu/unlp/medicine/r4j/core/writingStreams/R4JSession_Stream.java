@@ -3,15 +3,11 @@ package edu.unlp.medicine.r4j.core.writingStreams;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import edu.unlp.medicine.r4j.constants.OSDependentConstants;
 import edu.unlp.medicine.r4j.core.RException;
-import edu.unlp.medicine.r4j.utils.FileManager;
 import edu.unlp.medicine.r4j.utils.FileSystemUtils;
 import edu.unlp.medicine.r4j.utils.RUtils;
 import edu.unlp.medicine.r4j.utils.StringUtils;
+import edu.unlp.medicine.utils.FileManager;
 
 /**
  * It models a R session. All the execution will be part of the same session. In
