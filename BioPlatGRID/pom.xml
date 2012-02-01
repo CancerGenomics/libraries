@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>parent</artifactId>
+		<groupId>bioplat</groupId>
+		<version>0.0.3</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+  <artifactId>BioPlatGRID</artifactId>
+  <version>0.0.1</version>
+  <dependencies>
+  <dependency>
+        <groupId>org.gridgain</groupId>
+         <artifactId>gridgain</artifactId>
+         <version>3.0.0c-rc1</version> <!-- CHANGE IT! -->
+    </dependency>
+    <dependency>
+        <groupId>bioplat</groupId>
+         <artifactId>R4J</artifactId>
+         <version>1.2.0</version> <!-- CHANGE IT! -->
+    </dependency>
+    
+    
+    </dependencies>
+    
+    <repositories>
+		<repository>
+			<id>gridgain</id>
+			<url>http://www.gridgainsystems.com/maven2/</url>
+		</repository>
+	</repositories>
+    
+  
+</project>
