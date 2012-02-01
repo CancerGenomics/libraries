@@ -1,0 +1,4 @@
+res<-c(1,2,3)
+png("c:/users/matias/trtrt.png")
+plot(res)
+dev.off()
