@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -210,7 +211,7 @@ public class R4JSession {
 	 */
 	public List<String> getArrayValue(String variableName) throws RException {
 		flush();
-		Process rProcessForGettingVariable = runRProcessForExecutingExpression(variableName, false);
+		Process rProcessForGettingVariable = runRProcessForExecutingExpression(variableName, true);
 
 		// printStream(rProcessForGettingVariable.getInputStream());
 		return processRResponseForGettingArrayValue(rProcessForGettingVariable.getInputStream(), variableName);
@@ -274,6 +275,11 @@ public class R4JSession {
 				System.out.println(getCommandStringForExecutingR() + "-f " + expressionOrFilePath);
 				rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-f " + expressionOrFilePath, null, new File(userHome));
 					
+				printStream(rProcess.getErrorStream());
+				
+				
+				
+				
 				// WORKAROUND. If the input stream is full then the process
 				// doesnt finish and the process.waitFor() doesnt return.
 				// Considering that this statement is not for getting a value
@@ -425,6 +431,9 @@ public class R4JSession {
 		}
 	}
 
+	
+
+	
 	private void resetNonFlushedScriptsBufferedWriter() {
 		try {
 			scriptFileNumber++;

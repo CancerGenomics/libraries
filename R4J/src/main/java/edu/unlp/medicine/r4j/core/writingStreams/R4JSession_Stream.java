@@ -24,9 +24,9 @@ import edu.unlp.medicine.utils.FileManager;
 /**
  * It models a R session. All the execution will be part of the same session. In
  * the actual implementation all the lines of the file will be executed again
- * and again. When the problem of writing the OutputStream of the R process, it
- * will not necessary to execute again because the process is the same and R
- * keeps the previous execution session.
+ * and again. When the problem of writing the OutputStream of the R process is
+ * solved, it will not necessary to execute again because the process is the
+ * same and R keeps the previous execution session.
  * 
  * @author Matias
  * 
@@ -38,7 +38,7 @@ public class R4JSession_Stream {
 	String outputFileName;
 	Process rProcess;
 	FileSystemUtils fileSystemUtils;
-	
+
 	private static Logger LOGGER = LoggerFactory.getLogger(R4J_Stream.class);
 
 	public R4JSession_Stream(String rFileNameForWritingTheScripts, String outputFileName) throws RException {
@@ -125,23 +125,20 @@ public class R4JSession_Stream {
 		return listOfResults;
 	}
 
-	
-	
 	public void executeStatement(String line) {
 		try {
 			actualSessionFile.write(line + "\n");
 			actualSessionFile.flush();
 
-			
-			//WritableByteChannel outChannel = Channels.newChannel(rProcess.getOutputStream());
-			
-			//outChannel.write(ByteBuffer.wrap(line.getBytes()));
-			//outChannel.write(ByteBuffer.wrap(OSDependentConstants.LINE_SEPARATOR.getBytes()));
+			// WritableByteChannel outChannel =
+			// Channels.newChannel(rProcess.getOutputStream());
+
+			// outChannel.write(ByteBuffer.wrap(line.getBytes()));
+			// outChannel.write(ByteBuffer.wrap(OSDependentConstants.LINE_SEPARATOR.getBytes()));
 			PrintWriter bw = new PrintWriter(new OutputStreamWriter(rProcess.getOutputStream()));
 
-			//bw.write(line);
-			
-			
+			// bw.write(line);
+
 			// actualSessionFile.flush();
 
 		} catch (IOException e) {
@@ -244,22 +241,21 @@ public class R4JSession_Stream {
 	private void printStream(InputStream inputStream) {
 		InputStreamReader isr = new InputStreamReader(inputStream);
 		try {
-			if (isr.ready()){
-		
-					BufferedReader errorStream = new BufferedReader(isr);
-		
-					StringBuffer buffer = new StringBuffer();
-					int ch;
-		
-			
-					while ((ch = errorStream.read()) > -1) {
-						buffer.append((char)ch);
-					}
-					LOGGER.info(buffer.toString());
+			if (isr.ready()) {
+
+				BufferedReader errorStream = new BufferedReader(isr);
+
+				StringBuffer buffer = new StringBuffer();
+				int ch;
+
+				while ((ch = errorStream.read()) > -1) {
+					buffer.append((char) ch);
+				}
+				LOGGER.info(buffer.toString());
 			}
 		} catch (IOException e) {
-			
+
 			e.printStackTrace();
 		}
-		}
+	}
 }
