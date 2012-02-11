@@ -53,6 +53,8 @@ public class TestR4JInRserve extends TestCase {
 			Assert.assertTrue(REXPLogical.FALSE == resultOfFalseExpression
 					.asInteger());
 			Assert.assertTrue(resultOfFalseExpression.isLogical());
+			
+			c.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -62,18 +64,20 @@ public class TestR4JInRserve extends TestCase {
 	public void testEvaluationOfIntegerExpression() {
 
 		try {
-			RConnection c = new RConnection();
-			REXP result = c.eval("5 + 3");
+			RConnection connection = new RConnection();
+			REXP result = connection.eval("5 + 3"); 	
 			Assert.assertTrue(result.isInteger());
 			Assert.assertTrue(result.asInteger() == 8);
 
-			result = c.eval("5 - 3");
+			result = connection.eval("5 - 3");
 			Assert.assertTrue(result.isInteger());
 			Assert.assertTrue(result.asInteger() == 2);
 
-			result = c.eval("5 * 3");
+			result = connection.eval("5 * 3");
 			Assert.assertTrue(result.isInteger());
 			Assert.assertTrue(result.asInteger() == 15);
+			
+			connection.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
