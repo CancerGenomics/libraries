@@ -15,19 +15,6 @@ public class R4J {
 
 	private static Logger LOGGER = LoggerFactory.getLogger(R4J.class);
 
-	/**
-	 * Execute a file with R scripts.
-	 * 
-	 * @param userFolderName
-	 * @param filePathToExecuteWhenStart
-	 * @throws RException
-	 */
-	public void executeFile(String userFolderName, String filePathToExecuteWhenStart) throws RException {
-		R4JSession r4JSession = new R4JSession(userFolderName);
-		r4JSession.addStatementsOfTheFile(filePathToExecuteWhenStart);
-		r4JSession.flush();
-		r4JSession.close();
-	}
 
 	/**
 	 * It creates a clean RSession.
@@ -41,7 +28,8 @@ public class R4J {
 	 *             method will throw an RException and the session will not be
 	 *             created.
 	 */
-	public R4JSession getRSession(String userFolderName) throws RException {
+	
+	public R4JSession getRSessionFaster(String userFolderName) throws RException {
 		try {
 			return new R4JSession(userFolderName);
 		} catch (RException e) {
@@ -49,6 +37,8 @@ public class R4J {
 			throw e;
 		}
 	}
+
+
 
 	/**
 	 * 
@@ -62,7 +52,8 @@ public class R4J {
 	 * @return
 	 * @throws RException
 	 */
-	public R4JSession getRSession(String sessionName, String path) throws RException {
+
+	public R4JSession getRSessionFaster(String sessionName, String path) throws RException {
 		try {
 			return new R4JSession(sessionName, path);
 		} catch (RException e) {
@@ -71,4 +62,5 @@ public class R4J {
 		}
 	}
 
+	
 }

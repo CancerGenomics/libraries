@@ -1,17 +1,69 @@
 package edu.unlp.medicine.r4j.core;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
 public class TestR4JCore extends TestCase{
 
+	public void testRefreshVariableValues(){
+		R4JSession rj4SessionFaster = R4JFactory.getR4JInstance().getRSessionFaster("testGetRVariablesUsingFaster2");
+		
+		ListOfRVariablesToRefresh listOfRVariablesToRefresh = new ListOfRVariablesToRefresh();
+		listOfRVariablesToRefresh.addVariableToQuery("singleNumericValue", R_VARIABLE_TYPE.NUMERIC, "c(7)");
+		listOfRVariablesToRefresh.addVariableToQuery("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC,"c(8,1,2)");
+		listOfRVariablesToRefresh.addVariableToQuery("singleValueString", R_VARIABLE_TYPE.STRING,"c('hola')");
+		listOfRVariablesToRefresh.addVariableToQuery("multipleValueString", R_VARIABLE_TYPE.STRING,"c('hola','como','te','va')");
+		rj4SessionFaster.getValuesFromR(listOfRVariablesToRefresh);
+				
+		assertTrue(rj4SessionFaster.getSingleValueFromCache("singleNumericValue", R_VARIABLE_TYPE.NUMERIC).equals("7"));
+		assertTrue(rj4SessionFaster.getArrayValueFromCache("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC).size()==3);
+		
+		assertTrue(rj4SessionFaster.getSingleValueFromCache("singleValueString", R_VARIABLE_TYPE.STRING).equals("\"hola\""));
+		assertTrue(rj4SessionFaster.getArrayValueFromCache("multipleValueString", R_VARIABLE_TYPE.STRING).size()==4);
+		rj4SessionFaster.close();		
+		
+	}
+	
+	public void testGetValuesFromR(){
+		R4JSession rj4SessionFaster = R4JFactory.getR4JInstance().getRSessionFaster("testGetRVariablesUsingFaster2");
+		
+		rj4SessionFaster.addStatement("singleNumericValue<-c(7)");
+		rj4SessionFaster.addStatement("multipleNumericValue<-c(8,1,2)");
+		rj4SessionFaster.addStatement("singleValueString<-c('hola')");
+		rj4SessionFaster.addStatement("multipleValueString<-c('hola','como','te','va')");
+		
+		assertTrue(rj4SessionFaster.getSingleValueFromR("singleNumericValue", R_VARIABLE_TYPE.NUMERIC).equals("7"));
+		assertTrue(rj4SessionFaster.getArrayValueFromR("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC).size()==3);
+		
+		assertTrue(rj4SessionFaster.getSingleValueFromR("singleValueString", R_VARIABLE_TYPE.STRING).equals("\"hola\""));
+		assertTrue(rj4SessionFaster.getArrayValueFromR("multipleValueString", R_VARIABLE_TYPE.STRING).size()==4);
+		rj4SessionFaster.close();		
+		
+	}
+
+
+	public void testGetValuesFromRUsingExpression(){
+		R4JSession rj4SessionFaster = R4JFactory.getR4JInstance().getRSessionFaster("testGetRVariablesUsingFaster2");
+		
+		assertTrue(rj4SessionFaster.getSingleValueFromR("singleNumericValue", R_VARIABLE_TYPE.NUMERIC, "c(7)").equals("7"));
+		assertTrue(rj4SessionFaster.getArrayValueFromR("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC, "c(8,1,2)").size()==3);
+		
+		assertTrue(rj4SessionFaster.getSingleValueFromR("singleValueString", R_VARIABLE_TYPE.STRING, "c('hola')").equals("\"hola\""));
+		assertTrue(rj4SessionFaster.getArrayValueFromR("multipleValueString", R_VARIABLE_TYPE.STRING, "c('hola','como','te','va')").size()==4);
+		rj4SessionFaster.close();		
+		
+	}
+
+	
 	public void testBasicoConPathAbsoluto() {
 		//Variables
 		String linea="linea";
 		
 		try {
-			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSession("testBasicoDiego2", "c:\\matias");
+			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSessionFaster("testBasicoDiego2", "c:\\matias");
 			rj4Session.assign(linea, "c(1,2,2,2,1)");
 			rj4Session.plotInFile("LineaSencilla.png", linea);
 			rj4Session.flush();
@@ -31,7 +83,7 @@ public class TestR4JCore extends TestCase{
 		String linea="linea";
 		
 		try {
-			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSession("testBasicoDiego2");
+			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSessionFaster("testBasicoDiego2");
 			rj4Session.assign(linea, "c(1,2,2,2,1)");
 			rj4Session.plotInFile("LineaSencilla.png", linea);
 			rj4Session.flush();
@@ -41,14 +93,31 @@ public class TestR4JCore extends TestCase{
 		}
 	}
 	
+	public void testGetSingleNumericValue(){
+		R4JSession rj4Session = R4JFactory.getR4JInstance().getRSessionFaster("testGetSingleNumericValue2");
+		rj4Session.addStatement("valor<-c(7)");
+		String valor = rj4Session.getSingleValueFromR("valor", R_VARIABLE_TYPE.NUMERIC);
+		
+		rj4Session.addStatement("valor2<-c(8)");
+		String valor2 = rj4Session.getSingleValueFromR("valor2", R_VARIABLE_TYPE.NUMERIC);
+		
+		
+		assertTrue(valor.equals("7"));
+		
+		rj4Session.close();
+		
+		
+	}
+	
+	
 	public int testGetValue(String id){
 		//Variables
 		String recta="recta";
 		
 		try {
-			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSession("testGetValue" + id);
+			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSessionFaster("testGetValue" + id);
 			rj4Session.assign(recta, "c(1,2,3,4)");
-			List<String> result = rj4Session.getArrayValue(recta);
+			List<String> result = rj4Session.getArrayValueFromR(recta, R_VARIABLE_TYPE.NUMERIC);
 			
 			assertTrue(result.get(0).equals("1"));
 			
@@ -64,11 +133,11 @@ public class TestR4JCore extends TestCase{
 		//Variables
 		String recta="recta";
 		try {
-			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSession("testOpenCloseOpen");
+			R4JSession rj4Session = R4JFactory.getR4JInstance().getRSessionFaster("testOpenCloseOpen");
 			rj4Session.assign(recta, "c(1,2,3,4)");
 			rj4Session.flush();
 			
-			List<String> result = rj4Session.getArrayValue(recta);
+			List<String> result = rj4Session.getArrayValueFromR(recta, R_VARIABLE_TYPE.NUMERIC);
 			assertTrue(result.get(0).equals("1"));
 
 			rj4Session.close();

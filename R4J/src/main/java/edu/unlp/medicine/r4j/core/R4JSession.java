@@ -10,7 +10,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,51 +46,114 @@ import edu.unlp.medicine.utils.FileManager;
  * 
  * Inside the UserFolder will be also a folder called
  * R4J-session-<sessionId>Thread-<THREADID>. In this folder there will be one
- * file per flush with the R statements executed in this flush.
+ * file per flush with the R statements executed in this flush. Moreover, there
+ * will be one file per variable containing the actual value.
  * 
- * It is important to call flush every time you want to execute R statements.
- * All the statements which returns something do flush automatically. For
- * example getValue!!
+ * This implementation tries to get the values of many variables in one R
+ * execution instead of executing one R proces each time the user needs the
+ * value of an R variable.
+ * 
+ * 
+ * For getting the value of a set of variables you should: 1-Create an instance
+ * of ListOfRVariablesToRefresh. If you need to partition the uery to r in many
+ * executions (for example if there are many variables and so bigs) you should
+ * pass as parameter in the constructor the maximium number of variables.
+ * 2-Agregar todas las variablars que se quieren consultar utilizando el método
+ * aListOfRVariablesToRefresh>>addVariableToQuery. In this method you have to
+ * pass the variable name and the type and (optionally) the expression to
+ * evaluate and assign to the variable. If you dont pass the expression, you
+ * have to add the assigmnet statement using the traditional
+ * addStatement(variable<-expresion). 3-Execute the method
+ * R4JSessionFaster>>getValuesFromR(aListOfRVariablesToRefresh). This will
+ * update the cache with the variable values. 4-Query the variable using the
+ * methods R4JSessionFaster>>getSingleValueFromCache() and
+ * getArrayValueFromCache.
+ * 
+ * You can also use the methods R4JSessionFaster>>getSingleValueFromR() and
+ * getArrayValueFromR to go to R and get the value. Both methods put he variable
+ * value in the cache but also returns the value, so it is not necessary to get
+ * the value from cache.
+ * 
+ * 
+ * Examples: In this example, all the variables will be get with just one R
+ * execution.
+ * 		R4JSessionFaster rj4SessionFaster = R4JFactory.getR4JInstance().getRSessionFaster("testGetRVariablesUsingFaster2");
+		
+ * 		ListOfRVariablesToRefresh listOfRVariablesToRefresh = new ListOfRVariablesToRefresh();
+ * 		listOfRVariablesToRefresh.addVariableToQuery("singleNumericValue", R_VARIABLE_TYPE.NUMERIC, "c(7)");
+ * 		listOfRVariablesToRefresh.addVariableToQuery("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC,"c(8,1,2)");
+ * 		listOfRVariablesToRefresh.addVariableToQuery("singleValueString", R_VARIABLE_TYPE.STRING,"c('hola')");
+ * 		listOfRVariablesToRefresh.addVariableToQuery("multipleValueString", R_VARIABLE_TYPE.STRING,"c('hola','como','te','va')");
+ * 		rj4SessionFaster.getValuesFromR(listOfRVariablesToRefresh);
+ * 
+ * 		String value = rj4SessionFaster.getSingleValueFromCache("singleNumericValue", R_VARIABLE_TYPE.NUMERIC);
+ * 		List<String> value= rj4SessionFaster.getArrayValueFromCache("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC).size()==3;
+ * 		String value = rj4SessionFaster.getArrayValueFromCache("singleValueString", R_VARIABLE_TYPE.STRING).equals("\"hola\"");
+ * 		List<String> value= rj4SessionFaster.getArrayValueFromCache("multipleValueString", R_VARIABLE_TYPE.STRING).size()==4;
+
+		 
  * 
  * @author Matias
  * 
  */
 public class R4JSession {
 
-	// BufferedWriter with all the r statements executed along this session
-	BufferedWriter sessionScriptsLogBufferedWriter;
+	/**
+	 * BufferedWriter with all the r statements executed along this session
+	 */
+	private BufferedWriter sessionScriptsLogBufferedWriter;
 
-	// Non flushed scripts
+	/**
+	 * Non flushed scripts
+	 */
 	String nonFlushedScriptsFilePath;
+	String originalNonFlushedScriptsFilePath;
 	BufferedWriter nonFlushedScriptsBufferedWriter;
 
-	// File path to the output results
+	/**
+	 * File path to the output results
+	 */
 	String outputFilePath;
 
-	// Session id to allow working with more than one session in the same
-	// thread.
+	/**
+	 * Session id to allow working with more than one session in the same
+	 * thread.
+	 */
 	static int sessionId = 0;
 
-	// This is a workaround. If i do executeRASExternalProgramWith-F() and then
-	// resetFile() then it doenst work. That is why there are 1 file for each
-	// flush.
+	/**
+	 * This is a workaround. If i do executeRASExternalProgramWith-F() and then
+	 * resetFile() then it doenst work. That is why there are 1 file for each
+	 * flush.
+	 */
 	int scriptFileNumber = 0;
 
-	// This is the fileSystemUtils configured with the userFolderName received
-	// as constructor parameter.
+	/**
+	 * This is the fileSystemUtils configured with the userFolderName received
+	 * as constructor parameter.
+	 */
 	FileSystemUtils fileSystemUtils;
 
+	/**
+	 * This maps contains all the variables previosly got from R. E<ch variable
+	 * it is represented as a Stirng list and it can be accessed using the
+	 * methods getSinglValueFromCache or getArrayValueFromCache
+	 */
+	Map<String, List<String>> variableCache = new HashMap<String, List<String>>();
+
+	/**
+	 * CONFIGURATION
+	 */
 	static String TEMP_FOLDER = "TMP";
 	static String LOG_FILE_NAME = "LOG.TXT";
 	static String RESULTS_FILE_NAME = "RESULTS.TXT";
 	private static Logger LOGGER = LoggerFactory.getLogger(R4J.class);
 
-	
-	
 	/**
 	 * 
-	 * @param sessionScriptsLogFileName
-	 * @param resultsFileName
+	 * @param sessionName
+	 *            The name of the session. This session will be used to create a
+	 *            folder in the temp folder
 	 * @throws RException
 	 */
 	public R4JSession(String sessionName) throws RException {
@@ -96,38 +161,161 @@ public class R4JSession {
 		createFolderSession();
 	}
 
-	
+	/**
+	 * 
+	 * @param sessionName
+	 * @param path
+	 *            The path of
+	 * @throws RException
+	 */
 	public R4JSession(String sessionName, String path) throws RException {
 		fileSystemUtils = new FileSystemUtilsForAbsolutePath(this.getTempFolderName4ThisSession(), sessionName, path);
 		createFolderSession();
-}
-	
-	private void createFolderSession() {
-		try {
-
-			// It sets the Log
-			String sessionScriptsLogPath = (fileSystemUtils.completePathToUserFolder(LOG_FILE_NAME));
-			sessionScriptsLogBufferedWriter = FileManager.createFile(sessionScriptsLogPath);
-
-			// Initialize the bufferedWriter to keep the non executed scripts.
-			// Those scripts will be executed when calling flush() on this
-			// session.
-			nonFlushedScriptsFilePath = fileSystemUtils.completePathToTempFolder("scriptsForExecute-Thread" + Thread.currentThread().getId() + ".txt");
-			this.resetNonFlushedScriptsBufferedWriter();
-
-			// Sink into the resultFile recevied as parameter.
-			outputFilePath = fileSystemUtils.completePathToUserFolder(RESULTS_FILE_NAME);
-			this.sinkInto(outputFilePath, false);
-
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}
-
-		
 	}
 
+	// ////////////////////////////////////////////////////////////////
+	// ///////////////////////GETTING VARIABLES////////////////////////
+	// ////////////////////////////////////////////////////////////////
 
+	/**
+	 * This method is for refresh many variables in one R execution. The aim is
+	 * to improve the performance.
+	 * 
+	 * Instead of executing getSingleValue or getListValue for each variable you
+	 * need, you should package all the in a ListOfRVariablesToRefresh and call
+	 * this method to query all the values in one R call. After calling this
+	 * method, you can use the getSingleValue or getListValue passing the
+	 * variable name as parameter to get the corresponding value.
+	 * 
+	 */
+	public void getValuesFromR(ListOfRVariablesToRefresh listOfRVariablesToRefresh) {
+		for (String assignmentExpression : listOfRVariablesToRefresh.getExpressionsToEvaluate()) {
+			this.addStatement(assignmentExpression);
+		}
+		Map<String, List<String>> newVariableValues;
+		if (listOfRVariablesToRefresh.getNumberMaxOfVariablesInOneExecution() == -1) {
+			newVariableValues = this.accessRAndGetTheValuesOfVariables(listOfRVariablesToRefresh.getVariablesToGet());
+		} else {
+			newVariableValues = this.accessRAndGetTheValuesOfBigVariables(listOfRVariablesToRefresh.getVariablesToGet(), listOfRVariablesToRefresh.getNumberMaxOfVariablesInOneExecution());
+		}
+
+		for (String variableName : newVariableValues.keySet()) {
+			variableCache.put(variableName, newVariableValues.get(variableName));
+		}
+
+	}
+
+	/**
+	 * It gets the value from the cache. The value must be get from R (using
+	 * getSingleValueFromR or getVariblesFromR
+	 * 
+	 * @param variableName
+	 *            The name of the variable
+	 * @param type
+	 *            The type of the variable
+	 * @return The variable value as an String
+	 */
+	public String getSingleValueFromCache(String variableName, R_VARIABLE_TYPE type) {
+
+		return this.variableCache.get(variableName).get(0);
+
+	}
+
+	/**
+	 * It gets the value from R (The expression is just the name of the
+	 * variable), put the result in the cache and returns the value.
+	 * 
+	 * @param variableName
+	 *            The name of the variable
+	 * @param type
+	 *            The type of the variable
+	 * @return The variable value as an String
+	 */
+	public String getSingleValueFromR(String variableName, R_VARIABLE_TYPE type) {
+		ListOfRVariablesToRefresh listOfRVariablesToRefresh = new ListOfRVariablesToRefresh();
+		listOfRVariablesToRefresh.addVariableToQuery(variableName, type);
+		this.getValuesFromR(listOfRVariablesToRefresh);
+		return this.variableCache.get(variableName).get(0);
+	}
+
+	/**
+	 * It gets the value from R (The expression is just the name of the
+	 * variable), put the result in the cache and returns the value.
+	 * 
+	 * @param variableName
+	 *            The name of the variable
+	 * @param type
+	 *            The type of the variable
+	 * @param expression
+	 *            The result of it will be the value to assign to the variable.
+	 * @return The variable value.
+	 */
+	public String getSingleValueFromR(String variableName, R_VARIABLE_TYPE type, String expression) {
+		ListOfRVariablesToRefresh listOfRVariablesToRefresh = new ListOfRVariablesToRefresh();
+		listOfRVariablesToRefresh.addVariableToQuery(variableName, type, expression);
+		this.getValuesFromR(listOfRVariablesToRefresh);
+		return this.variableCache.get(variableName).get(0);
+	}
+
+	/**
+	 * It gets the value from the cache. The value must be get from R (using
+	 * getSingleValueFromR or getVariblesFromR
+	 * 
+	 * @param variableName
+	 *            The name of the variable
+	 * @param type
+	 *            The type of the variable
+	 * @return The variable value as an String
+	 */
+	public List<String> getArrayValueFromCache(String variableName, R_VARIABLE_TYPE type) {
+
+		return this.variableCache.get(variableName);
+
+	}
+
+	/**
+	 * It gets the value from R (The expression is just the name of the
+	 * variable), put the result in the cache and returns the value.
+	 * 
+	 * @param variableName
+	 *            The name of the variable
+	 * @param type
+	 *            The type of the variable
+	 * 
+	 * @return The variable value as an String
+	 */
+	public List<String> getArrayValueFromR(String variableName, R_VARIABLE_TYPE type) {
+
+		ListOfRVariablesToRefresh listOfRVariablesToRefresh = new ListOfRVariablesToRefresh();
+		listOfRVariablesToRefresh.addVariableToQuery(variableName, type);
+		this.getValuesFromR(listOfRVariablesToRefresh);
+		return this.variableCache.get(variableName);
+
+	}
+
+	/**
+	 * It gets the value from R (The expression is just the name of the
+	 * variable), put the result in the cache and returns the value.
+	 * 
+	 * @param variableName
+	 *            The name of the variable
+	 * @param type
+	 *            The type of the variable
+	 * @param type
+	 *            The result of it will be the value to assing to the variable.
+	 * @return The variable value as an String
+	 */
+	public List<String> getArrayValueFromR(String variableName, R_VARIABLE_TYPE type, String expression) {
+		ListOfRVariablesToRefresh listOfRVariablesToRefresh = new ListOfRVariablesToRefresh();
+		listOfRVariablesToRefresh.addVariableToQuery(variableName, type, expression);
+		this.getValuesFromR(listOfRVariablesToRefresh);
+		return this.variableCache.get(variableName);
+
+	}
+
+	// /////////////////////////////////////////////////
+	// ////////API//////////////////////////////////
+	// /////////////////////////////////////////////////
 
 	public void assign(String variableName, String expression) {
 		this.addStatement(variableName + "<-" + expression);
@@ -181,132 +369,6 @@ public class R4JSession {
 		return outputFilePath;
 	}
 
-	/**
-	 * It flushes and then it runs R for executing the expression for querying
-	 * the variable name. For reading the data it queries the
-	 * rProcess.getInputStram(). It should be used for variables holding single
-	 * values (not arrays, not matrix).
-	 * 
-	 * @param variableName
-	 *            a variable with a single value.
-	 * @return The variable value in the R session.
-	 * @throws RException
-	 */
-	public String getSingleValue(String variableName) throws RException {
-		flush();
-		Process rProcessForGettingVariable = runRProcessForExecutingExpression(variableName, false);
-		return processRResponseForGettingSingleValue(rProcessForGettingVariable.getInputStream(), variableName);
-	}
-
-	/**
-	 * It flushes and then it runs R for executing the expression for querying
-	 * the variable name. For reading the data it queries the
-	 * rProcess.getInputStram(). It should be used for variables holding values
-	 * in an array (not matrix).
-	 * 
-	 * @param variableName
-	 *            a variable with an array value.
-	 * @return The variable value in the R session.
-	 * @throws RException
-	 */
-	public List<String> getArrayValue(String variableName) throws RException {
-		flush();
-		Process rProcessForGettingVariable = runRProcessForExecutingExpression(variableName, true);
-
-		// printStream(rProcessForGettingVariable.getInputStream());
-		return processRResponseForGettingArrayValue(rProcessForGettingVariable.getInputStream(), variableName);
-	}
-
-	private List<String> processRResponseForGettingArrayValue(InputStream rInputStream, String variableName) throws RException {
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(rInputStream));
-
-		List<String> result = new ArrayList<String>();
-		try {
-			System.out.println(bufferedReader.readLine());
-			String resultLine = bufferedReader.readLine();
-			System.out.println(resultLine);
-			String[] resultLineParts = resultLine.split(OSDependentConstants.BLANK_CHAR);
-			for (int i = 1; i < resultLineParts.length; i++) {
-				result.add(resultLineParts[i]);
-			}
-
-			return result;
-		} catch (IOException e) {
-			throw new RException("It was not possible to read the variable " + variableName);
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new RException("It was not possible to read the variable " + variableName);
-		}
-	}
-
-	/**
-	 * R returns the result in the following way: > result [1] 14 This method
-	 * will get the second line and then pick up the second part of the split
-	 * using the blank char.
-	 * 
-	 * @param rInputStream
-	 * @param variableName
-	 * @return
-	 * @throws RException
-	 */
-	private String processRResponseForGettingSingleValue(InputStream rInputStream, String variableName) throws RException {
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(rInputStream));
-		try {
-			bufferedReader.readLine();
-			String resultLine = bufferedReader.readLine();
-			return resultLine.split(OSDependentConstants.BLANK_CHAR)[1];
-		} catch (IOException e) {
-			throw new RException("It was not possible to read the variable " + variableName);
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new RException("It was not possible to read the variable " + variableName);
-		}
-	}
-
-	private Process runRProcessForExecutingExpression(String expression, boolean async) throws RException {
-		return runRProcessForExecutingExpressionOrFile(expression, async, R_EXECUTION_MODE_ENUM.EXPRESSION);
-	}
-
-	private Process runRProcessForExecutingExpressionOrFile(String expressionOrFilePath, boolean async, R_EXECUTION_MODE_ENUM executionMode) throws RException {
-		try {
-			String userHome = fileSystemUtils.getUserFolderPath();
-			Process rProcess;
-			if (executionMode == R_EXECUTION_MODE_ENUM.EXPRESSION) {
-				rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-e " + expressionOrFilePath, null, new File(userHome));
-			} else {
-				System.out.println(getCommandStringForExecutingR() + "-f " + expressionOrFilePath);
-				rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-f " + expressionOrFilePath, null, new File(userHome));
-					
-				printStream(rProcess.getErrorStream());
-				
-				
-				
-				
-				// WORKAROUND. If the input stream is full then the process
-				// doesnt finish and the process.waitFor() doesnt return.
-				// Considering that this statement is not for getting a value
-				// and i dont need the inputStream text, i "clean" it.
-				if (!async)
-					printStream(rProcess.getInputStream());
-			}
-			if (!async) {
-				// printStream(rProcess.getErrorStream());
-				// printStream(rProcess.getInputStream());
-
-				rProcess.waitFor();
-			}
-
-			return rProcess;
-		} catch (IOException e) {
-			LOGGER.error("It was not possible to execute R.");
-			throw new RException("Error trying to execute the R process as external program");
-
-		} catch (InterruptedException e) {
-			LOGGER.error("Problem executing R process");
-			throw new RException("Error trying to execute the R process as external program");
-
-		}
-
-	}
-
 	public void addStatementsOfTheFile(String filePath) {
 		BufferedReader br;
 		try {
@@ -342,25 +404,6 @@ public class R4JSession {
 
 	}
 
-	private void quit() {
-		this.addStatement("q()");
-
-	}
-
-	private Process runRProcessForExecutingFile(String filePath, boolean async) throws RException {
-		return runRProcessForExecutingExpressionOrFile(filePath, async, R_EXECUTION_MODE_ENUM.FILE);
-	}
-
-	/**
-	 * It returns the string containing the r path and the common parameters for
-	 * any r execution from R4J (-q and --save)
-	 * 
-	 * @return
-	 */
-	private String getCommandStringForExecutingR() {
-		return OSDependentConstants.DOUBLE_QUOTE + OSDependentConstants.PATH_TO_R + OSDependentConstants.DOUBLE_QUOTE + " --save --restore -q ";
-	}
-
 	public void addStatement(String line) {
 		try {
 			sessionScriptsLogBufferedWriter.write(line);
@@ -383,6 +426,8 @@ public class R4JSession {
 			e.printStackTrace();
 		}
 	}
+
+	// ////////////////////////PRIVATE/////////////////////////////
 
 	private void assignPathToRTemp(String variableName, String filePath) {
 		List<String> pathParts = RUtils.getPathPartsOfAFile(filePath);
@@ -415,29 +460,16 @@ public class R4JSession {
 				System.out.println(line);
 				line = errorStream.readLine();
 			}
-
-			// StringBuffer buffer = new StringBuffer();
-			// int ch;
-			//
-			// while ((ch = errorStream.read()) > -1) {
-			// buffer.append((char) ch);
-			// }
-			// System.out.println(buffer.toString());
-
-			// }
 		} catch (IOException e) {
 
 			e.printStackTrace();
 		}
 	}
 
-	
-
-	
 	private void resetNonFlushedScriptsBufferedWriter() {
 		try {
 			scriptFileNumber++;
-			nonFlushedScriptsFilePath = nonFlushedScriptsFilePath + scriptFileNumber;
+			nonFlushedScriptsFilePath = originalNonFlushedScriptsFilePath + scriptFileNumber;
 			nonFlushedScriptsBufferedWriter = FileManager.createFile(nonFlushedScriptsFilePath);
 
 		} catch (IOException e) {
@@ -458,21 +490,259 @@ public class R4JSession {
 		this.sinkInto(outputFilePath, false);
 	}
 
-	// public String getString(String libraryName){
-	// String libraryWithQuotes = StringUtils.addQuotes(libraryName);
-	// addScriptLine("load(" + libraryWithQuotes + ")");
+	private void createFolderSession() {
+		try {
+
+			// It sets the Log
+			String sessionScriptsLogPath = (fileSystemUtils.completePathToUserFolder(LOG_FILE_NAME));
+			sessionScriptsLogBufferedWriter = FileManager.createFile(sessionScriptsLogPath);
+
+			// Initialize the bufferedWriter to keep the non executed scripts.
+			// Those scripts will be executed when calling flush() on this
+			// session.
+
+			originalNonFlushedScriptsFilePath = fileSystemUtils.completePathToTempFolder("scriptsForExecute-Thread" + Thread.currentThread().getId() + ".txt");
+			nonFlushedScriptsFilePath = originalNonFlushedScriptsFilePath;
+			this.resetNonFlushedScriptsBufferedWriter();
+
+			// Sink into the resultFile recevied as parameter.
+			outputFilePath = fileSystemUtils.completePathToUserFolder(RESULTS_FILE_NAME);
+			this.sinkInto(outputFilePath, false);
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * It returns in a map the content for each variable as a String list. For
+	 * the variables that returns just one value, it also return it as a list
+	 * but of just one element. It is faster than execute the
+	 * getSingleStringValue or getArrayStringValue, because it can execute in
+	 * just one R process execution all the variables while the others executes
+	 * an R process, one per variable.
+	 * 
+	 * @param variables
+	 * @return
+	 */
+	private Map<String, List<String>> accessRAndGetTheValuesOfBigVariables(List<RVariableDescription> variableNames, int numberMaxOfVariablesInOneExecution) {
+
+		Map<String, List<String>> result = new HashMap<String, List<String>>();
+		int times = variableNames.size() / numberMaxOfVariablesInOneExecution;
+
+		for (int i = 0; i < times; i++) {
+			doRAccess(variableNames.subList(i * numberMaxOfVariablesInOneExecution, ((i + 1) * numberMaxOfVariablesInOneExecution)), result);
+		}
+		doRAccess(variableNames.subList(times * numberMaxOfVariablesInOneExecution, variableNames.size()), result);
+
+		return result;
+
+	}
+
+	private Map<String, List<String>> accessRAndGetTheValuesOfVariables(List<RVariableDescription> variableNames) {
+		Map<String, List<String>> result = new HashMap<String, List<String>>();
+		doRAccess(variableNames, result);
+		return result;
+	}
+
+	private void doRAccess(List<RVariableDescription> variableNames, Map<String, List<String>> result) {
+
+		for (RVariableDescription rVariableDescription : variableNames) {
+			// SINK into a file for this variable
+			this.sinkInto(fileSystemUtils.completePathToTempFolder(rVariableDescription.getName()), false);
+
+			// Variable
+			this.addStatement(rVariableDescription.getName());
+		}
+		flush();
+		BufferedReader bufferedReader;
+		List<String> contentOfActualVariable = null;
+		// PROCESAR ARCHIVOS
+		for (RVariableDescription rVariableDescription : variableNames) {
+
+			try {
+				bufferedReader = new BufferedReader(new FileReader(fileSystemUtils.completePathToTempFolder(rVariableDescription.getName())));
+
+				if (rVariableDescription.type == R_VARIABLE_TYPE.NUMERIC) {
+					contentOfActualVariable = this.processRResponseForGettingNumericArray(bufferedReader, rVariableDescription.getName());
+				} else if (rVariableDescription.type == R_VARIABLE_TYPE.STRING) {
+					contentOfActualVariable = this.processRResponseForGettingStringArray(bufferedReader, rVariableDescription.getName());
+				}
+				result.put(rVariableDescription.getName(), contentOfActualVariable);
+			} catch (FileNotFoundException e) {
+				LOGGER.error("The file: " + fileSystemUtils.completePathToTempFolder(rVariableDescription.getName()) + " is not available Perhaps it doesnt exis in the R session. The variable: " + rVariableDescription.getName() + " will not be avaiable");
+			}
+
+		}
+
+	}
+
+	/**
+	 * Method for getting an array of strings that must be sorrounded by some
+	 * char; for example quotes
+	 * 
+	 * @param inputStream
+	 * @param variableName
+	 * @return
+	 */
+	private List<String> processRResponseForGettingStringArray(BufferedReader bufferedReader, String variableName) {
+
+		List<String> result = new ArrayList<String>();
+
+		String resultLine;
+		try {
+			// resultLine = bufferedReader.readLine();
+			resultLine = bufferedReader.readLine();
+			StringBuffer actualString = new StringBuffer("");
+			while (resultLine != null) {
+
+				int actualPos = 0;
+
+				while (actualPos < resultLine.length() - 1) {
+					actualString = new StringBuffer("");
+					char actualChar = resultLine.charAt(actualPos);
+					while (actualChar != '"' && actualPos < resultLine.length() - 1) {
+						actualPos++;
+						actualChar = resultLine.charAt(actualPos);
+					}
+
+					if (actualPos < resultLine.length() - 1) {
+						actualPos++;
+						actualChar = resultLine.charAt(actualPos);
+						while (actualChar != '"') {
+							actualString.append(resultLine.charAt(actualPos));
+							actualPos++;
+							actualChar = resultLine.charAt(actualPos);
+						}
+
+						result.add('"' + actualString.toString() + '"');
+
+						if (actualPos < resultLine.length() - 1) {
+							actualPos++;
+							actualChar = resultLine.charAt(actualPos);
+						}
+					}
+				}
+
+				resultLine = bufferedReader.readLine();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return result;
+
+	}
+
+	private List<String> processRResponseForGettingNumericArray(BufferedReader bufferedReader, String variableName) throws RException {
+
+		List<String> result = new ArrayList<String>();
+		try {
+
+			// String resultLine = bufferedReader.readLine();
+			String resultLine = bufferedReader.readLine();
+
+			while (resultLine != null) {
+
+				resultLine = resultLine.trim();
+				String[] resultLineParts = resultLine.split(OSDependentConstants.BLANK_CHAR + "+");
+				for (int i = 1; i < resultLineParts.length; i++) {
+					result.add(resultLineParts[i]);
+				}
+				resultLine = bufferedReader.readLine();
+			}
+
+			return result;
+		} catch (IOException e) {
+			throw new RException("It was not possible to read the variable " + variableName);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RException("It was not possible to read the variable " + variableName);
+		}
+	}
+
+	private void runRProcessForExecutingExpressionOrFile(String expressionOrFilePath, boolean async, R_EXECUTION_MODE_ENUM executionMode) {
+		String userHome = fileSystemUtils.getUserFolderPath();
+		try {
+			if (executionMode == R_EXECUTION_MODE_ENUM.EXPRESSION) {
+
+				Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-e " + expressionOrFilePath, null, new File(userHome));
+			} else {
+				System.out.println(getCommandStringForExecutingR() + "-f " + expressionOrFilePath);
+				Process rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-f " + expressionOrFilePath, null, new File(userHome));
+				printStream(rProcess.getInputStream());
+
+			}
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+	}
+
+	// private Process runRProcessForExecutingExpressionOrFile(String
+	// expressionOrFilePath, boolean async, R_EXECUTION_MODE_ENUM executionMode)
+	// throws RException {
+	// try {
+	// String userHome = fileSystemUtils.getUserFolderPath();
+	// Process rProcess;
+	// if (executionMode == R_EXECUTION_MODE_ENUM.EXPRESSION) {
+	// rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() +
+	// "-e " + expressionOrFilePath, null, new File(userHome));
+	// } else {
+	// System.out.println(getCommandStringForExecutingR() + "-f " +
+	// expressionOrFilePath);
+	// rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() +
+	// "-f " + expressionOrFilePath, null, new File(userHome));
+	//
+	// printStream(rProcess.getErrorStream());
+	//
+	// // WORKAROUND. If the input stream is full then the process
+	// // doesnt finish and the process.waitFor() doesnt return.
+	// // Considering that this statement is not for getting a value
+	// // and i dont need the inputStream text, i "clean" it.
+	// if (!async)
+	// printStream(rProcess.getInputStream());
+	// }
+	// if (!async) {
+	// // printStream(rProcess.getErrorStream());
+	// // printStream(rProcess.getInputStream());
+	//
+	// rProcess.waitFor();
 	// }
 	//
-	// public int getInt(){
+	// return rProcess;
+	// } catch (IOException e) {
+	// LOGGER.error("It was not possible to execute R.");
+	// throw new
+	// RException("Error trying to execute the R process as external program");
+	//
+	// } catch (InterruptedException e) {
+	// LOGGER.error("Problem executing R process");
+	// throw new
+	// RException("Error trying to execute the R process as external program");
 	//
 	// }
-	//
-	// public int getDouble(){
-	//
-	// }
-	//
-	// public getIntArray(){
 	//
 	// }
 
+	private void quit() {
+		this.addStatement("q()");
+
+	}
+
+	private void runRProcessForExecutingFile(String filePath, boolean async) throws RException {
+		runRProcessForExecutingExpressionOrFile(filePath, async, R_EXECUTION_MODE_ENUM.FILE);
+	}
+
+	/**
+	 * It returns the string containing the r path and the common parameters for
+	 * any r execution from R4J (-q and --save)
+	 * 
+	 * @return
+	 */
+	private String getCommandStringForExecutingR() {
+		return OSDependentConstants.DOUBLE_QUOTE + OSDependentConstants.PATH_TO_R + OSDependentConstants.DOUBLE_QUOTE + " --save --restore -q ";
+	}
 }
