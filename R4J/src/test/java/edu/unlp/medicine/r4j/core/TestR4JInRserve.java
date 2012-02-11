@@ -6,6 +6,7 @@ import junit.framework.TestCase;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.Rserve.RConnection;
+import org.rosuda.REngine.Rserve.RserveException;
 
 /**
  * This class represents the Rserve test cases. Requires that the server
@@ -15,12 +16,35 @@ import org.rosuda.REngine.Rserve.RConnection;
  * 
  */
 public class TestR4JInRserve extends TestCase {
+	
+	private RConnection connection;
+	
+	@Override
+	protected void tearDown(){ 
+		try {
+			super.tearDown();
+			connection.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	protected void setUp() {
+		try {
+			super.setUp();
+			connection = new RConnection();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	public void testRVersion() {
 		try {
-			RConnection c = new RConnection();
-			Assert.assertNotNull(c.eval("R.version.string"));
-			c.close();
+			Assert.assertNotNull(connection.eval("R.version.string"));
+			
 		} catch (Exception e) {
 
 			e.printStackTrace();
@@ -30,9 +54,8 @@ public class TestR4JInRserve extends TestCase {
 
 	public void testConnection() {
 		try {
-			RConnection c = new RConnection();
-			Assert.assertTrue(c.isConnected());
-			c.close();
+			Assert.assertTrue(connection.isConnected());
+			
 		} catch (Exception e) {
 
 			e.printStackTrace();
@@ -43,18 +66,18 @@ public class TestR4JInRserve extends TestCase {
 	public void testEvaluationOfBooleanExpression() {
 
 		try {
-			RConnection c = new RConnection();
-			REXP resultOfTrueExpression = c.eval("5 > 3");
+			
+			REXP resultOfTrueExpression = connection.eval("5 > 3");
 			Assert.assertTrue(REXPLogical.TRUE == resultOfTrueExpression
 					.asInteger());
 			Assert.assertTrue(resultOfTrueExpression.isLogical());
 
-			REXP resultOfFalseExpression = c.eval("5 < 3");
+			REXP resultOfFalseExpression = connection.eval("5 < 3");
 			Assert.assertTrue(REXPLogical.FALSE == resultOfFalseExpression
 					.asInteger());
 			Assert.assertTrue(resultOfFalseExpression.isLogical());
 			
-			c.close();
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -64,20 +87,20 @@ public class TestR4JInRserve extends TestCase {
 	public void testEvaluationOfIntegerExpression() {
 
 		try {
-			RConnection connection = new RConnection();
+			
 			REXP result = connection.eval("5 + 3"); 	
-			Assert.assertTrue(result.isInteger());
+			Assert.assertTrue(result.isNumeric());
 			Assert.assertTrue(result.asInteger() == 8);
 
 			result = connection.eval("5 - 3");
-			Assert.assertTrue(result.isInteger());
+			Assert.assertTrue(result.isNumeric());
 			Assert.assertTrue(result.asInteger() == 2);
 
 			result = connection.eval("5 * 3");
-			Assert.assertTrue(result.isInteger());
+			Assert.assertTrue(result.isNumeric());
 			Assert.assertTrue(result.asInteger() == 15);
 			
-			connection.close();
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();
