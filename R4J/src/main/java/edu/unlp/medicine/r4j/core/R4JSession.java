@@ -317,6 +317,18 @@ public class R4JSession {
 	// ////////API//////////////////////////////////
 	// /////////////////////////////////////////////////
 
+
+	public void nullVariable(String variableName){
+		this.addStatement(variableName + "<-" + "NA");
+		flush();
+	}
+	
+	public boolean isNull(String variableName){
+		flush();
+		String isNull = this.getSingleValueFromR("isNull",R_VARIABLE_TYPE.BOOLEAN, "is.na(" + variableName + ")");
+		return Boolean.parseBoolean(isNull);
+	}
+	
 	public void assign(String variableName, String expression) {
 		this.addStatement(variableName + "<-" + expression);
 	}
@@ -569,12 +581,41 @@ public class R4JSession {
 					contentOfActualVariable = this.processRResponseForGettingNumericArray(bufferedReader, rVariableDescription.getName());
 				} else if (rVariableDescription.type == R_VARIABLE_TYPE.STRING) {
 					contentOfActualVariable = this.processRResponseForGettingStringArray(bufferedReader, rVariableDescription.getName());
+				} else if (rVariableDescription.type == R_VARIABLE_TYPE.BOOLEAN) {
+					contentOfActualVariable = this.processRResponseForGettingBooleanArray(bufferedReader, rVariableDescription.getName());
 				}
 				result.put(rVariableDescription.getName(), contentOfActualVariable);
 			} catch (FileNotFoundException e) {
 				LOGGER.error("The file: " + fileSystemUtils.completePathToTempFolder(rVariableDescription.getName()) + " is not available Perhaps it doesnt exis in the R session. The variable: " + rVariableDescription.getName() + " will not be avaiable");
 			}
 
+		}
+
+	}
+
+	private List<String> processRResponseForGettingBooleanArray(BufferedReader bufferedReader, String name) {
+		List<String> result = new ArrayList<String>();
+		try {
+
+			// String resultLine = bufferedReader.readLine();
+			String resultLine = bufferedReader.readLine();
+
+			while (resultLine != null) {
+
+				resultLine = resultLine.trim();
+				String[] resultLineParts = resultLine.split(OSDependentConstants.BLANK_CHAR + "+");
+				for (int i = 1; i < resultLineParts.length; i++) {
+					result.add(resultLineParts[i]);
+					
+				}
+				resultLine = bufferedReader.readLine();
+			}
+
+			return result;
+		} catch (IOException e) {
+			throw new RException("It was not possible to read the variable " + name);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new RException("It was not possible to read the variable " + name);
 		}
 
 	}

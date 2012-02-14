@@ -29,7 +29,7 @@ public class R4J {
 	 *             created.
 	 */
 	
-	public R4JSession getRSessionFaster(String userFolderName) throws RException {
+	public R4JSession getRSession(String userFolderName) throws RException {
 		try {
 			return new R4JSession(userFolderName);
 		} catch (RException e) {
@@ -53,7 +53,7 @@ public class R4J {
 	 * @throws RException
 	 */
 
-	public R4JSession getRSessionFaster(String sessionName, String path) throws RException {
+	public R4JSession getRSession(String sessionName, String path) throws RException {
 		try {
 			return new R4JSession(sessionName, path);
 		} catch (RException e) {
