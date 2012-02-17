@@ -325,7 +325,7 @@ public class R4JSession {
 	
 	public boolean isNull(String variableName){
 		flush();
-		String isNull = this.getSingleValueFromR("isNull",R_VARIABLE_TYPE.BOOLEAN, "is.na(" + variableName + ")");
+		String isNull = this.getSingleValueFromR("isNull" + variableName,R_VARIABLE_TYPE.BOOLEAN, "is.na(" + variableName + ")");
 		return Boolean.parseBoolean(isNull);
 	}
 	
@@ -469,7 +469,7 @@ public class R4JSession {
 			BufferedReader errorStream = new BufferedReader(isr);
 			String line = errorStream.readLine();
 			while (line != null) {
-				System.out.println(line);
+				//System.out.println(line);
 				line = errorStream.readLine();
 			}
 		} catch (IOException e) {
@@ -565,8 +565,16 @@ public class R4JSession {
 			// SINK into a file for this variable
 			this.sinkInto(fileSystemUtils.completePathToTempFolder(rVariableDescription.getName()), false);
 
+			if (rVariableDescription.type == R_VARIABLE_TYPE.NUMERIC) {
+				this.addStatement("as.numeric(" + rVariableDescription.getName() + ")");
+			} else if (rVariableDescription.type == R_VARIABLE_TYPE.STRING) {
+				this.addStatement("as.character(" + rVariableDescription.getName() + ")");
+			} else if (rVariableDescription.type == R_VARIABLE_TYPE.BOOLEAN) {
+				this.addStatement(rVariableDescription.getName());
+			}
+			
 			// Variable
-			this.addStatement(rVariableDescription.getName());
+			
 		}
 		flush();
 		BufferedReader bufferedReader;
@@ -711,6 +719,15 @@ public class R4JSession {
 
 				Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-e " + expressionOrFilePath, null, new File(userHome));
 			} else {
+				BufferedReader br = new BufferedReader(new FileReader(expressionOrFilePath));
+				String l = br.readLine();
+				System.out.println("**********************************");
+				System.out.println("Starting to execute: " + expressionOrFilePath);
+				while (l!=null){
+					System.out.println(l);
+					l = br.readLine();
+				}
+				
 				System.out.println(getCommandStringForExecutingR() + "-f " + expressionOrFilePath);
 				Process rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-f " + expressionOrFilePath, null, new File(userHome));
 				printStream(rProcess.getInputStream());
@@ -769,7 +786,7 @@ public class R4JSession {
 	// }
 
 	private void quit() {
-		this.addStatement("q()");
+		this.addStatement("q(save='yes')");
 
 	}
 
