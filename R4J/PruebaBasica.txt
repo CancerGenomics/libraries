@@ -1,7 +1,0 @@
-pathToOutputFile<-paste("C:",.Platform$file.sep,"Users",.Platform$file.sep,"Matias",.Platform$file.sep,"C:",.Platform$file.sep,"Users",.Platform$file.sep,"Matias",.Platform$file.sep,"C:\Users\Matias\resultado.txt",sep="")
-sink(pathToOutputFile)
-linea<-c(1,2,3,4)
-pathInJavaFormat<-paste("C:",.Platform$file.sep,"Users",.Platform$file.sep,"Matias",.Platform$file.sep,"LineaSencilla.png",sep="")
-png(pathInJavaFormat)
-plot(linea)
-dev.off()
