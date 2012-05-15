@@ -11,7 +11,7 @@ import edu.unlp.medicine.r4j.exceptions.R4JValueMismatchException;
 /**
  * This abstract class tops the hierarchy representing the possible values.
  * 
- * @author Diego García
+ * @author Diego GarcÃ­a
  * 
  */
 public abstract class R4JValue {
@@ -34,8 +34,7 @@ public abstract class R4JValue {
 	 * 
 	 * @return
 	 */
-	public abstract Object asNativeJavaObject()
-			throws R4JValueMismatchException;
+	public abstract Object asNativeJavaObject() throws R4JValueMismatchException;
 
 	/**
 	 * GETTER
