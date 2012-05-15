@@ -3,9 +3,11 @@ package edu.unlp.medicine.r4j.exceptions;
 import edu.unlp.medicine.r4j.values.R4JValue;
 
 /**
- * This class represents an inconsistency in the transformation of R4JValue to native objects
- * @author Diego García
- *
+ * This class represents an inconsistency in the transformation of R4JValue to
+ * native objects
+ * 
+ * @author Diego GarcÃ­a
+ * 
  */
 public class R4JValueMismatchException extends Exception {
 	private R4JValue sender;

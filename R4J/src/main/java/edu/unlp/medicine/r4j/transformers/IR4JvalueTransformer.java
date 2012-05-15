@@ -6,11 +6,12 @@ import edu.unlp.medicine.r4j.values.R4JValue;
 
 /**
  * This interface represents the transformation of an REXP to a R4JValue
- * @author Diego García
- *
+ * 
+ * @author Diego GarcÃ­a
+ * 
  */
 public interface IR4JvalueTransformer {
-	
-	R4JValue transform (final REXP source);
+
+	R4JValue transform(final REXP source);
 
 }
