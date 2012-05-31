@@ -1,5 +1,6 @@
 package edu.unlp.medicine.r4j.environments;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,19 +19,17 @@ public class R4JSession {
 		bridge = new R4JRServerBridge();
 	}
 
-	public void loadLibrary(final String libraryName)
-			throws R4JConnectionException {
+	public void loadLibrary(final String libraryName) throws R4JConnectionException {
 		try {
 			String expression = "library(" + libraryName + ")";
-			
+
 			if (logger.isDebugEnabled()) {
 				logger.debug(expression);
 			}
-			
+
 			this.getBridge().evaluate(expression);
 		} catch (R4JTransformerNotFoundException e) {
-			// TODO log
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 	}
 
@@ -44,35 +43,36 @@ public class R4JSession {
 
 	}
 
-	public void assign(String variableName, String expression)
-			throws R4JConnectionException {
+	public void assign(String variableName, String expression) throws R4JConnectionException {
 		if (logger.isDebugEnabled()) {
-			logger.debug(variableName +  "=" + expression);
+			logger.debug(variableName + "=" + expression);
 		}
 		this.getBridge().assign(variableName, expression);
 
 	}
-	
-	public void assign(String variableName, R4JValue value)
-			throws R4JConnectionException {
+
+	public void assign(String variableName, R4JValue value) throws R4JConnectionException {
 		if (logger.isDebugEnabled()) {
-			logger.debug(variableName +  "=" + value.getClass().getSimpleName());
+			logger.debug(variableName + "=" + value.getClass().getSimpleName());
 		}
 		this.getBridge().assign(variableName, value);
 
 	}
-	
+
 	public void loadPlatforms(final String platformsName) {
 		this.getBridge().loadPlatforms(platformsName);
 	}
 
-	public R4JValue evaluate(String expression) throws R4JConnectionException,
-			R4JTransformerNotFoundException {
+	public R4JValue evaluate(String expression) throws R4JConnectionException, R4JTransformerNotFoundException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Evaluate:" + expression);
 		}
 		return this.getBridge().evaluate(expression);
 
+	}
+
+	public byte[] plot(final String expressionToPlot) {
+		return this.getBridge().plot(expressionToPlot);
 	}
 
 	protected IR4JBridge getBridge() {
