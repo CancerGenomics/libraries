@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +26,7 @@ import edu.unlp.medicine.r4j.utils.StringUtils;
 import edu.unlp.medicine.utils.FileManager;
 
 /**
+ * <p>
  * It models an R session. The actual implementation writes a file in the path
  * nonFlushedScriptsFilePath (apart of the log whose path is received as
  * parameter) with all non executed r statements. When the flush() method is
@@ -36,24 +36,27 @@ import edu.unlp.medicine.utils.FileManager;
  * important to mention that the R program is run on the working directory
  * System.getProperty("user.home"). So, the starting point of any relative path
  * used in R (including the R files executed) will be start in this path.
- * 
+ * </p>
+ * <p>
  * The session creates a folder inside the System.getProperty("user.home")/R4J
  * folder. The name of this folder is a mandatory constructor parameter and this
  * folder is known as UserFolder. In this folder you can find LOG.TXT with all
  * the log of this session. RESULTS.txt with all the R output during this
  * session. It is also the .rdata file which will be used to restore the
  * workspace with the variables of the previous flush() invokes.
- * 
+ * </p>
+ * <p>
  * Inside the UserFolder will be also a folder called
  * R4J-session-<sessionId>Thread-<THREADID>. In this folder there will be one
  * file per flush with the R statements executed in this flush. Moreover, there
  * will be one file per variable containing the actual value.
- * 
+ * </p>
+ * <p>
  * This implementation tries to get the values of many variables in one R
  * execution instead of executing one R proces each time the user needs the
  * value of an R variable.
- * 
- * 
+ * </p>
+ * <p>
  * For getting the value of a set of variables you should: 1-Create an instance
  * of ListOfRVariablesToRefresh. If you need to partition the uery to r in many
  * executions (for example if there are many variables and so bigs) you should
@@ -68,30 +71,35 @@ import edu.unlp.medicine.utils.FileManager;
  * update the cache with the variable values. 4-Query the variable using the
  * methods R4JSessionFaster>>getSingleValueFromCache() and
  * getArrayValueFromCache.
- * 
+ * </p>
+ * <p>
  * You can also use the methods R4JSessionFaster>>getSingleValueFromR() and
  * getArrayValueFromR to go to R and get the value. Both methods put he variable
  * value in the cache but also returns the value, so it is not necessary to get
  * the value from cache.
  * 
- * 
+ * </p>
+ * <p>
  * Examples: In this example, all the variables will be get with just one R
  * execution.
- * 		R4JSessionFaster rj4SessionFaster = R4JFactory.getR4JInstance().getRSessionFaster("testGetRVariablesUsingFaster2");
-		
- * 		ListOfRVariablesToRefresh listOfRVariablesToRefresh = new ListOfRVariablesToRefresh();
- * 		listOfRVariablesToRefresh.addVariableToQuery("singleNumericValue", R_VARIABLE_TYPE.NUMERIC, "c(7)");
- * 		listOfRVariablesToRefresh.addVariableToQuery("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC,"c(8,1,2)");
- * 		listOfRVariablesToRefresh.addVariableToQuery("singleValueString", R_VARIABLE_TYPE.STRING,"c('hola')");
- * 		listOfRVariablesToRefresh.addVariableToQuery("multipleValueString", R_VARIABLE_TYPE.STRING,"c('hola','como','te','va')");
- * 		rj4SessionFaster.getValuesFromR(listOfRVariablesToRefresh);
+ * </p>
+ * <code><pre>
+ * R4JSessionFaster rj4SessionFaster = R4JFactory.getR4JInstance().getRSessionFaster("testGetRVariablesUsingFaster2");
+ * 		
+ * ListOfRVariablesToRefresh listOfRVariablesToRefresh = new ListOfRVariablesToRefresh();
+ * listOfRVariablesToRefresh.addVariableToQuery("singleNumericValue", R_VARIABLE_TYPE.NUMERIC, "c(7)");
+ * listOfRVariablesToRefresh.addVariableToQuery("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC,"c(8,1,2)");
+ * listOfRVariablesToRefresh.addVariableToQuery("singleValueString", R_VARIABLE_TYPE.STRING,"c('hola')");
+ * listOfRVariablesToRefresh.addVariableToQuery("multipleValueString", R_VARIABLE_TYPE.STRING,"c('hola','como','te','va')");
+ * rj4SessionFaster.getValuesFromR(listOfRVariablesToRefresh);
  * 
- * 		String value = rj4SessionFaster.getSingleValueFromCache("singleNumericValue", R_VARIABLE_TYPE.NUMERIC);
- * 		List<String> value= rj4SessionFaster.getArrayValueFromCache("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC).size()==3;
- * 		String value = rj4SessionFaster.getArrayValueFromCache("singleValueString", R_VARIABLE_TYPE.STRING).equals("\"hola\"");
- * 		List<String> value= rj4SessionFaster.getArrayValueFromCache("multipleValueString", R_VARIABLE_TYPE.STRING).size()==4;
-
-		 
+ * String value = rj4SessionFaster.getSingleValueFromCache("singleNumericValue", R_VARIABLE_TYPE.NUMERIC);
+ * List<String> value= rj4SessionFaster.getArrayValueFromCache("multipleNumericValue", R_VARIABLE_TYPE.NUMERIC).size()==3;
+ * String value = rj4SessionFaster.getArrayValueFromCache("singleValueString", R_VARIABLE_TYPE.STRING).equals("\"hola\"");
+ * List<String> value= rj4SessionFaster.getArrayValueFromCache("multipleValueString", R_VARIABLE_TYPE.STRING).size()==4;
+ * 
+ * </pre>
+ * </code>
  * 
  * @author Matias
  * 
@@ -317,18 +325,17 @@ public class R4JSession {
 	// ////////API//////////////////////////////////
 	// /////////////////////////////////////////////////
 
-
-	public void nullVariable(String variableName){
+	public void nullVariable(String variableName) {
 		this.addStatement(variableName + "<-" + "NA");
 		flush();
 	}
-	
-	public boolean isNull(String variableName){
+
+	public boolean isNull(String variableName) {
 		flush();
-		String isNull = this.getSingleValueFromR("isNull" + variableName,R_VARIABLE_TYPE.BOOLEAN, "is.na(" + variableName + ")");
+		String isNull = this.getSingleValueFromR("isNull" + variableName, R_VARIABLE_TYPE.BOOLEAN, "is.na(" + variableName + ")");
 		return Boolean.parseBoolean(isNull);
 	}
-	
+
 	public void assign(String variableName, String expression) {
 		this.addStatement(variableName + "<-" + expression);
 	}
@@ -469,7 +476,7 @@ public class R4JSession {
 			BufferedReader errorStream = new BufferedReader(isr);
 			String line = errorStream.readLine();
 			while (line != null) {
-				//System.out.println(line);
+				// System.out.println(line);
 				line = errorStream.readLine();
 			}
 		} catch (IOException e) {
@@ -572,9 +579,9 @@ public class R4JSession {
 			} else if (rVariableDescription.type == R_VARIABLE_TYPE.BOOLEAN) {
 				this.addStatement(rVariableDescription.getName());
 			}
-			
+
 			// Variable
-			
+
 		}
 		flush();
 		BufferedReader bufferedReader;
@@ -614,7 +621,7 @@ public class R4JSession {
 				String[] resultLineParts = resultLine.split(OSDependentConstants.BLANK_CHAR + "+");
 				for (int i = 1; i < resultLineParts.length; i++) {
 					result.add(resultLineParts[i]);
-					
+
 				}
 				resultLine = bufferedReader.readLine();
 			}
@@ -723,11 +730,11 @@ public class R4JSession {
 				String l = br.readLine();
 				System.out.println("**********************************");
 				System.out.println("Starting to execute: " + expressionOrFilePath);
-				while (l!=null){
+				while (l != null) {
 					System.out.println(l);
 					l = br.readLine();
 				}
-				
+
 				System.out.println(getCommandStringForExecutingR() + "-f " + expressionOrFilePath);
 				Process rProcess = Runtime.getRuntime().exec(getCommandStringForExecutingR() + "-f " + expressionOrFilePath, null, new File(userHome));
 				printStream(rProcess.getInputStream());
