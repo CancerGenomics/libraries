@@ -24,7 +24,7 @@ public class R4JRServerBridge implements IR4JBridge {
 	@Override
 	public void open() throws R4JConnectionException {
 		try {
-			connection = new RConnection(RServeConfigurator.getInstance().getHost(), RServeConfigurator.getInstance().getPort());			
+			connection = new RConnection(RServeConfigurator.getInstance().getHost(), RServeConfigurator.getInstance().getPort());
 		} catch (Exception ex) {
 			logger.error("Error in opening a connection to the Rserve on port" + RServeConfigurator.getInstance().getPort(), ex);
 			throw new R4JConnectionException(ex.getMessage(), ex);
@@ -41,8 +41,9 @@ public class R4JRServerBridge implements IR4JBridge {
 	@Override
 	public void assign(String variableName, String expression) throws R4JConnectionException {
 		try {
-			// connection.assign(variableName, expression);
-			connection.assign(variableName, this.connection.parseAndEval(expression));
+			connection.assign(variableName, expression);
+			// connection.assign(variableName,
+			// this.connection.parseAndEval(expression));
 		} catch (Exception e) {
 			logger.error("Failed to assign the variable named " + variableName + " value " + expression, e);
 			throw new R4JConnectionException(e.getMessage(), e);
@@ -61,6 +62,17 @@ public class R4JRServerBridge implements IR4JBridge {
 			throw new R4JConnectionException(e.getMessage(), e);
 		}
 		return result;
+	}
+
+	@Override
+	public void voidEvaluate(final String expression) throws R4JConnectionException {
+		try {
+			this.connection.voidEval(expression);
+		} catch (RserveException e) {
+			logger.error("Error evaluating expression " + expression, e);
+			throw new R4JConnectionException(e.getMessage(), e);
+		}
+
 	}
 
 	@Override

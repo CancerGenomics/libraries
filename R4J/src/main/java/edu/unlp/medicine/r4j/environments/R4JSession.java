@@ -1,6 +1,5 @@
 package edu.unlp.medicine.r4j.environments;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +67,14 @@ public class R4JSession {
 			logger.debug("Evaluate:" + expression);
 		}
 		return this.getBridge().evaluate(expression);
+
+	}
+
+	public void voidEvaluate(final String expression) throws R4JConnectionException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Evaluate:" + expression);
+		}
+		this.getBridge().voidEvaluate(expression);
 
 	}
 

@@ -19,4 +19,6 @@ public interface IR4JBridge {
 
 	byte[] plot(final String expressionToPlot);
 
+	void voidEvaluate(final String expression) throws R4JConnectionException;
+
 }
