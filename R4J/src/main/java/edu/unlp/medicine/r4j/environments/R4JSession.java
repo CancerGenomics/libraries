@@ -90,7 +90,7 @@ public class R4JSession {
 				String expressionToPlot = script.substring(0, position - 1);
 				try {
 					this.voidEvaluate(expressionToPlot);
-					this.plot("survFitResult1");
+					image = this.plot("survFitResult1");
 				} catch (R4JConnectionException e) {
 					this.logger.error(e.getMessage(), e);
 				}
