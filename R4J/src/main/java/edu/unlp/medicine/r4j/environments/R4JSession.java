@@ -82,6 +82,23 @@ public class R4JSession {
 		return this.getBridge().plot(expressionToPlot);
 	}
 
+	public byte[] plotSurvivalCurve(final String script) {
+		byte[] image = null;
+		if (script != null) {
+			int position = script.indexOf("plot");
+			if (position > 0) {
+				String expressionToPlot = script.substring(0, position - 1);
+				try {
+					this.voidEvaluate(expressionToPlot);
+					this.plot("survFitResult1");
+				} catch (R4JConnectionException e) {
+					this.logger.error(e.getMessage(), e);
+				}
+			}
+		}
+		return image;
+	}
+
 	protected IR4JBridge getBridge() {
 		return this.bridge;
 	}
