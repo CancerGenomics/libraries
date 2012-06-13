@@ -131,8 +131,10 @@ public class R4JRServerBridge implements IR4JBridge {
 			}
 
 			// this.connection.parseAndEval("data(iris); attach(iris); plot(Sepal.Length, Petal.Length, col=unclass(Species)); dev.off()");
-			this.assign("expressionToPlot", expressionToPlot);
-			this.connection.parseAndEval("data(iris); attach(iris); plot(expressionToPlot,col=c('red', 'blue', 'green', 'orange', 'yellow', 'brown')); dev.off()");
+			// this.assign("expressionToPlot", expressionToPlot);
+			// this.connection.parseAndEval("data(iris); attach(iris); plot(expressionToPlot,col=c('red', 'blue', 'green', 'orange', 'yellow', 'brown')); dev.off()");
+
+			this.connection.parseAndEval("data(iris); attach(iris); plot(survFitResult1,col=c('red', 'blue', 'green', 'orange', 'yellow', 'brown')); dev.off()");
 
 			// There is no I/O API in REngine because it's actually more
 			// efficient to use R for this

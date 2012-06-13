@@ -1,5 +1,7 @@
 package edu.unlp.medicine.r4j.environments;
 
+import java.util.Scanner;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +91,13 @@ public class R4JSession {
 			if (position > 0) {
 				String expressionToPlot = script.substring(0, position - 1);
 				try {
-					this.voidEvaluate(expressionToPlot);
+					// this.voidEvaluate(expressionToPlot);
+					Scanner scanner = new Scanner(expressionToPlot);
+					String expression = "";
+					while (scanner.hasNext()) {
+						expression = scanner.nextLine();
+						this.voidEvaluate(expression);
+					}
 					image = this.plot("survFitResult1");
 				} catch (R4JConnectionException e) {
 					this.logger.error(e.getMessage(), e);
