@@ -159,4 +159,9 @@ public class R4JRServerBridge implements IR4JBridge {
 
 		return imageAsByte;
 	}
+
+	@Override
+	public boolean isOpen() {
+		return this.connection.isConnected();
+	}
 }

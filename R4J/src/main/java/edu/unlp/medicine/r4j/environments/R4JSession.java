@@ -36,7 +36,10 @@ public class R4JSession {
 
 	public void open() throws R4JConnectionException {
 		this.getBridge().open();
+	}
 
+	public boolean isOpen() {
+		return this.getBridge().isOpen();
 	}
 
 	public void close() {

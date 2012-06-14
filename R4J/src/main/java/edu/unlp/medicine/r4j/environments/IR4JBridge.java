@@ -21,4 +21,6 @@ public interface IR4JBridge {
 
 	void voidEvaluate(final String expression) throws R4JConnectionException;
 
+	boolean isOpen();
+
 }
