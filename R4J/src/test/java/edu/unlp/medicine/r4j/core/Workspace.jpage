@@ -1,0 +1,11 @@
+String value = "REXPString";
+value.replaceAll("REXP","").toLowerCase();
+
+
+java.util.StringTokenizer tokens=new java.util.StringTokenizer("14,15, 13",",");
+String resultado = "";
+while(tokens.hasMoreTokens()){
+        String value = tokens.nextToken();
+       resultado = resultado + value;
+    }
+resultado.toString();

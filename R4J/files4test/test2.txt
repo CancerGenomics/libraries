@@ -1,0 +1,6 @@
+v
+png("c:/res.png")
+plot(v)
+dev.off()
+sink("c:/resultadito.txt")
+v
