@@ -72,7 +72,6 @@ public class R4JSession {
 			logger.debug("Evaluate:" + expression);
 		}
 		return this.getBridge().evaluate(expression);
-
 	}
 
 	public void voidEvaluate(final String expression) throws R4JConnectionException {
@@ -80,6 +79,13 @@ public class R4JSession {
 			logger.debug("Evaluate:" + expression);
 		}
 		this.getBridge().voidEvaluate(expression);
+	}
+
+	public void parseAndEval(final String expression) throws R4JConnectionException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Evaluate:" + expression);
+		}
+		this.getBridge().parseAndEval(expression);
 
 	}
 

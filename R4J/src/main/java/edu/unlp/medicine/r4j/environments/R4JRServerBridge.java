@@ -164,4 +164,14 @@ public class R4JRServerBridge implements IR4JBridge {
 	public boolean isOpen() {
 		return this.connection.isConnected();
 	}
+
+	@Override
+	public void parseAndEval(String expression) throws R4JConnectionException {
+		try {
+			this.connection.parseAndEval(expression);
+		} catch (Exception e) {
+			logger.error("Error evaluating expression " + expression, e);
+			throw new R4JConnectionException(e.getMessage(), e);
+		}
+	}
 }
