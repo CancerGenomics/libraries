@@ -166,12 +166,15 @@ public class R4JRServerBridge implements IR4JBridge {
 	}
 
 	@Override
-	public void parseAndEval(String expression) throws R4JConnectionException {
+	public R4JValue parseAndEval(String expression) throws R4JConnectionException {
+		R4JValue value = null;
 		try {
-			this.connection.parseAndEval(expression);
+			REXP exp = this.connection.parseAndEval(expression);
+			value = R4JTransformerUtils.transform(exp);
 		} catch (Exception e) {
 			logger.error("Error evaluating expression " + expression, e);
 			throw new R4JConnectionException(e.getMessage(), e);
 		}
+		return value;
 	}
 }

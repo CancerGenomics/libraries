@@ -81,11 +81,11 @@ public class R4JSession {
 		this.getBridge().voidEvaluate(expression);
 	}
 
-	public void parseAndEval(final String expression) throws R4JConnectionException {
+	public R4JValue parseAndEval(final String expression) throws R4JConnectionException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Evaluate:" + expression);
 		}
-		this.getBridge().parseAndEval(expression);
+		return this.getBridge().parseAndEval(expression);
 
 	}
 
