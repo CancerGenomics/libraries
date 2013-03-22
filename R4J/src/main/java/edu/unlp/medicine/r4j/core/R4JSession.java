@@ -808,6 +808,8 @@ public class R4JSession {
 	 * @return
 	 */
 	private String getCommandStringForExecutingR() {
-		return OSDependentConstants.DOUBLE_QUOTE + OSDependentConstants.PATH_TO_R + OSDependentConstants.DOUBLE_QUOTE + " --save --restore -q ";
+		final String rcmd = OSDependentConstants.DOUBLE_QUOTE + OSDependentConstants.PATH_TO_R + OSDependentConstants.DOUBLE_QUOTE + " --save --restore -q ";
+		LOGGER.info("Ejecutando " + rcmd);
+		return rcmd;
 	}
 }
