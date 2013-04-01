@@ -107,7 +107,7 @@ public class R4JSession {
 						expression = scanner.nextLine();
 						this.voidEvaluate(expression);
 					}
-					image = this.plot("survFitResult1");
+					image = this.plot(expression.split("<-")[0]);
 				} catch (R4JConnectionException e) {
 					this.logger.error(e.getMessage(), e);
 				}

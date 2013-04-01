@@ -109,14 +109,14 @@ public class R4JRServerBridge implements IR4JBridge {
 
 			// if Cairo is installed, we can get much nicer graphics, so try to
 			// load it
-			if (this.connection.parseAndEval("suppressWarnings(require('Cairo',quietly=TRUE))").asInteger() > 0)
-				device = "CairoJPEG"; // great, we can use Cairo device
-			else
-				logger.info("(consider installing Cairo package for better bitmap output)");
+//			if (this.connection.parseAndEval("suppressWarnings(require('Cairo',quietly=TRUE))").asInteger() > 0)
+//				device = "CairoJPEG"; // great, we can use Cairo device
+//			else
+//				logger.info("(consider installing Cairo package for better bitmap output)");
 
 			// we are careful here - not all R binaries support jpeg so we
 			// rather capture any failures
-			REXP xp = this.connection.parseAndEval("try(" + device + "('test.jpg',quality=90))");
+			REXP xp = this.connection.parseAndEval("try(" + device + "('test.jpg',quality=100, width = 250, height = 350))");
 
 			if (xp.inherits("try-error")) { // if the result is of the class
 											// try-error then there was a
@@ -134,12 +134,15 @@ public class R4JRServerBridge implements IR4JBridge {
 			// this.assign("expressionToPlot", expressionToPlot);
 			// this.connection.parseAndEval("data(iris); attach(iris); plot(expressionToPlot,col=c('red', 'blue', 'green', 'orange', 'yellow', 'brown')); dev.off()");
 
-			this.connection.parseAndEval("data(iris); attach(iris); plot(survFitResult1,col=c('red', 'blue', 'green', 'orange', 'yellow', 'brown')); dev.off()");
+			this.connection.parseAndEval("plot(" + expressionToPlot + ",col=c('red', 'blue', 'green', 'orange', 'yellow', 'brown')); dev.off()");
 
 			// There is no I/O API in REngine because it's actually more
 			// efficient to use R for this
 			// we limit the file size to 1MB which should be sufficient and we
 			// delete the file as well
+			
+			
+			
 			xp = this.connection.parseAndEval("r=readBin('test.jpg','raw',1024*1024); unlink('test.jpg'); r");
 			imageAsByte = xp.asBytes();
 
