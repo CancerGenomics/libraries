@@ -116,7 +116,7 @@ public class R4JRServerBridge implements IR4JBridge {
 
 			// we are careful here - not all R binaries support jpeg so we
 			// rather capture any failures
-			REXP xp = this.connection.parseAndEval("try(" + device + "('test.jpg',quality=100, width = 250, height = 350))");
+			REXP xp = this.connection.parseAndEval("try(" + device + "('test.jpg',quality=100, width = 300, height = 300))");
 
 			if (xp.inherits("try-error")) { // if the result is of the class
 											// try-error then there was a
