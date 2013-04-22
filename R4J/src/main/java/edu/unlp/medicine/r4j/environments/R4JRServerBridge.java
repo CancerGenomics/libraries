@@ -76,15 +76,16 @@ public class R4JRServerBridge implements IR4JBridge {
 	}
 
 	@Override
-	public void loadPlatforms(String platformsName) {
+	public void loadPlatforms(String platformsName) throws RserveException {
 
 		REXP platforms;
 		try {
 			platforms = connection.eval("getPlatforms(" + platformsName + ")");
 			connection.assign("platforms", platforms);
 		} catch (RserveException e) {
-			logger.error("Error loading platform " + platformsName, e);
+			logger.error("Error loading platform " + platformsName + ". Script: " + "getPlatforms(" + platformsName + ")", e);
 			e.printStackTrace();
+			throw e;
 		}
 
 	}
@@ -95,6 +96,7 @@ public class R4JRServerBridge implements IR4JBridge {
 			connection.assign(variableName, value.getNativeValue());
 		} catch (RserveException e) {
 			logger.error("Failed to assign the variable named " + variableName + " : " + value.getClass().getSimpleName(), e);
+			
 			throw new R4JConnectionException(e.getMessage(), e);
 		}
 

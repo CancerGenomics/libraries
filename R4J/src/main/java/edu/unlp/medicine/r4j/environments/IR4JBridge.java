@@ -1,5 +1,7 @@
 package edu.unlp.medicine.r4j.environments;
 
+import org.rosuda.REngine.Rserve.RserveException;
+
 import edu.unlp.medicine.r4j.exceptions.R4JConnectionException;
 import edu.unlp.medicine.r4j.exceptions.R4JTransformerNotFoundException;
 import edu.unlp.medicine.r4j.values.R4JValue;
@@ -15,7 +17,7 @@ public interface IR4JBridge {
 
 	R4JValue evaluate(final String expression) throws R4JConnectionException, R4JTransformerNotFoundException;
 
-	void loadPlatforms(final String platformsName);
+	void loadPlatforms(final String platformsName) throws RserveException ;
 
 	byte[] plot(final String expressionToPlot);
 

@@ -2,6 +2,7 @@ package edu.unlp.medicine.r4j.environments;
 
 import java.util.Scanner;
 
+import org.rosuda.REngine.Rserve.RserveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +64,7 @@ public class R4JSession {
 
 	}
 
-	public void loadPlatforms(final String platformsName) {
+	public void loadPlatforms(final String platformsName) throws R4JConnectionException, RserveException {
 		this.getBridge().loadPlatforms(platformsName);
 	}
 
