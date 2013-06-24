@@ -26,7 +26,7 @@ public class R4JRServerBridge implements IR4JBridge {
 		try {
 			connection = new RConnection(RServeConfigurator.getInstance().getHost(), RServeConfigurator.getInstance().getPort());
 		} catch (Exception ex) {
-			logger.error("Error in opening a connection to the Rserve on port" + RServeConfigurator.getInstance().getPort(), ex);
+			logger.debug("Error in opening a connection to the Rserve on port " + RServeConfigurator.getInstance().getPort());
 			throw new R4JConnectionException(ex.getMessage(), ex);
 		}
 
