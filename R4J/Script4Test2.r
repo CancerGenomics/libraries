@@ -1,0 +1,13 @@
+Sys.unsetenv("R_LIBS_SITE")
+Sys.unsetenv("R_LIBS_USER")
+suppressWarnings(require('survival',quietly=TRUE))
+suppressWarnings(require('fpc',quietly=TRUE))
+suppressWarnings(require('Biobase',quietly=TRUE))
+suppressWarnings(require('inSilicoDb',quietly=TRUE))
+suppressWarnings(require('limma',quietly=TRUE))
+suppressWarnings(require('frma',quietly=TRUE))
+suppressWarnings(require('survcomp',quietly=TRUE))
+suppressWarnings(require('hgu133afrmavecs',quietly=TRUE))
+suppressWarnings(require('affy',quietly=TRUE))
+library(anyNonExistenLibrary)
+#ERROR Error trying to load library: anyNonExistenLibrary. Possible causes: 1)The library was not installed in R  2)You have misspelled the library name
