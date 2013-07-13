@@ -3,10 +3,14 @@
  */
 package edu.unlp.medicine.r4j.values;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 
 import edu.unlp.medicine.r4j.exceptions.R4JValueMismatchException;
+import edu.unlp.medicine.r4j.server.R4JConnection;
 
 /**
  * This abstract class tops the hierarchy representing the possible values.
@@ -45,6 +49,26 @@ public abstract class R4JValue {
 		return this.adaptee;
 	}
 
+	public List<String> asStringArrayList() {
+		List<String> strings = new ArrayList<String>();
+		String[] stringsArray = this.asStrings();
+		for (String string: stringsArray) {
+			strings.add(string);
+		}
+		return strings;
+	}
+
+	public List<Integer> asIntegerArrayList() {
+		List<Integer> ints = new ArrayList<Integer>();
+		int[] intsArray = this.asIntegers();
+		for (int anInteger : intsArray) {
+			ints.add(anInteger );
+		}
+		return ints;
+
+	}
+
+	
 	public String[] asStrings() {
 		String[] result = null;
 		try {
@@ -115,6 +139,16 @@ public abstract class R4JValue {
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	public boolean isLogical() {
+		return this.getAdaptee().isLogical();
+		
+	}
+
+	public boolean isNumeric() {
+		return this.getAdaptee().isNumeric();
+		
 	}
 
 }

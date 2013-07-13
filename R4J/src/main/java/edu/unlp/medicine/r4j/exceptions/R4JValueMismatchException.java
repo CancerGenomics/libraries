@@ -9,16 +9,20 @@ import edu.unlp.medicine.r4j.values.R4JValue;
  * @author Diego García
  * 
  */
-public class R4JValueMismatchException extends Exception {
+@SuppressWarnings("serial")
+public class R4JValueMismatchException extends R4JException  {
 	private R4JValue sender;
 	private String access;
 
-	public R4JValueMismatchException(final R4JValue rexp, final String s) {
-		super("attempt to access " + rexp.getClass().getName() + " as " + s);
+
+	
+	public R4JValueMismatchException(final Throwable error, final R4JValue rexp, final String s) {
+		super("attempt to access " + rexp.getClass().getName() + " as " + s, error);
 		sender = rexp;
 		access = s;
 	}
-
+	
+	
 	public R4JValue getSender() {
 		return sender;
 	}

@@ -3,7 +3,7 @@ package edu.unlp.medicine.r4j.utils;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-import edu.unlp.medicine.r4j.environments.RServeConfigurator;
+import edu.unlp.medicine.r4j.server.RServeConfigurator;
 
 public class SocketUtils {
 

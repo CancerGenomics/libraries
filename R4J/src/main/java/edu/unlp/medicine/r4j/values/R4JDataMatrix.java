@@ -23,7 +23,7 @@ public class R4JDataMatrix extends R4JValue {
 		try {
 			return this.getAdaptee().asNativeJavaObject();
 		} catch (REXPMismatchException e) {
-			throw new R4JValueMismatchException(this,"native Java Object");		
+			throw new R4JValueMismatchException(e,this,"native Java Object");		
 		}		
 	}
 

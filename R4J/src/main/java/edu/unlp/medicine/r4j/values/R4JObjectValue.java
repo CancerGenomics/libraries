@@ -16,7 +16,7 @@ public class R4JObjectValue extends R4JValue {
 
 	@Override
 	public Object asNativeJavaObject() throws R4JValueMismatchException {
-		throw new R4JValueMismatchException(this, "native Java Object");
+		throw new R4JValueMismatchException(new Exception(), this, "native Java Object");
 	}
 
 	/**

@@ -1,9 +1,6 @@
 package edu.unlp.medicine.r4j.transformers;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Properties;
 
 import org.rosuda.REngine.REXP;
@@ -20,7 +17,7 @@ public class R4JTransformerUtils {
 		try {
 			transformer = (IR4JvalueTransformer) Class.forName(properties.getProperty(getKeyToDirectory(source))).newInstance(); //$NON-NLS-1$
 		} catch (Exception e) {
-			throw new R4JTransformerNotFoundException(source.getClass());
+			throw new R4JTransformerNotFoundException(e.getMessage(), e, source.getClass());
 		} 
 		return transformer.transform(source);
 	}
@@ -30,7 +27,6 @@ public class R4JTransformerUtils {
 	}
 	
 	static {		
-		FileInputStream file;
 		try {
 			InputStream input = R4JTransformerUtils.class.getResourceAsStream("/transformationsDirectory.properties");
 			properties.load(input);

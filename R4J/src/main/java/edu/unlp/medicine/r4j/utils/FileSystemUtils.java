@@ -1,55 +1,66 @@
 package edu.unlp.medicine.r4j.utils;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unlp.medicine.r4j.constants.OSDependentConstants;
+import edu.unlp.medicine.r4j.server.R4JConnection;
 
-public abstract class FileSystemUtils {
-	
-	String r4jFolder = "R4J";
-	File r4jFolderFile;
+public class FileSystemUtils {
 
-	String tempFolderName;
-	String userFolderName;
+	public static String R4J_FOLDER = "R4J";
+	private static Logger logger = LoggerFactory.getLogger(R4JConnection.class);
 	
 	
-	public FileSystemUtils(String tempFolderName, String userFolderName){
-		
-		this.tempFolderName = tempFolderName;
-		this.userFolderName = userFolderName;
-		
-//		mkDir(OSDependentConstants.USER_HOME + OSDependentConstants.FILE_SEPARATOR + r4jFolder);
-//		mkDir(this.getUserFolderPath());
-//		mkDir(this.getTempFolderPath());
+	public static String getUserFolderPath(){
+		return OSDependentConstants.USER_HOME + OSDependentConstants.FILE_SEPARATOR + R4J_FOLDER;
+	}
+	
+	
+	public static  String completePathToUserFolder(String fileName){
+		return getUserFolderPath() + OSDependentConstants.FILE_SEPARATOR + fileName;
+	}
+
+	public static BufferedWriter createBufferedWriter(String filePath) throws IOException{
+		try {
+			File file = new File(filePath);
+			file.getParentFile().mkdirs();
+			return new BufferedWriter(new FileWriter(file));
+		} catch (IOException e) {
+			
+			logger.error("Error trying to create the file on path: " + filePath + e);
+			throw e;
+		}
 		
 		
 	}
-	
 
-//	private void mkDir(String path) {
-//		r4jFolderFile = new File(path);
-//		r4jFolderFile.mkdir();
-//	}
 
-	public abstract String getUserFolderPath();
+	public static BufferedWriter createFile(String path) throws IOException{
+		return createFile(path, false);
+	}
 	
-	public abstract String getTempFolderPath();
-	
-	public abstract String completePathToUserFolder(String fileName);
+	public static BufferedWriter createFile(String path, boolean append) throws IOException{
+		BufferedWriter bufferedWriter;
+		try {
+			bufferedWriter = new BufferedWriter(new FileWriter(path, append));
+		} catch (IOException e) {
+			File file = new File(path);
+			file.getParentFile().mkdirs();
+			try {
+				bufferedWriter = new BufferedWriter(new FileWriter(path, append));
+			} catch (IOException e1) {
+				e.printStackTrace();
+				throw e1;
+			}
+		}
+		return bufferedWriter;
+	}
 
-	public abstract String completePathToTempFolder(String fileName);
 	
-	
-	
-
-//	public void deleteWorkingDirectory() {
-//		File[] files = temp.listFiles();
-//	      for(int i=0; i<files.length; i++) {
-//	           files[i].delete();
-//	      }
-//	    folderFile.delete();
-//	}
-		
-	
-
 }
