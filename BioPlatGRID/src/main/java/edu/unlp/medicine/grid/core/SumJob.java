@@ -25,7 +25,7 @@ public class SumJob extends GridJobAdapter<Integer> {
 			rj4Session.assign(recta, "c(1,2,3,4)");
 			List<String> result = rj4Session.getArrayValue(recta);
 			rj4Session.close();
-			return new Integer(result.get(0));
+			return Integer.valueOf(result.get(0));
 		} catch (RException e) {
 			return 0;
 		}
