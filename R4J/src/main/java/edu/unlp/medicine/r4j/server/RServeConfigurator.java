@@ -10,7 +10,7 @@ import edu.unlp.medicine.r4j.utils.SocketUtils;
 public class RServeConfigurator {
 	public static final int DEFAULT_PORT = 6311;
 	// Logger Object
-	private static Logger logger = LoggerFactory.getLogger(RServeConfigurator.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RServeConfigurator.class);
 	private static RServeConfigurator instance = null;
 	//private int port = 6311;
 	private String host = "127.0.0.1";
@@ -32,7 +32,7 @@ public class RServeConfigurator {
 		try {
 			port = SocketUtils.findFreePort();
 		} catch (IOException e) {
-			logger.error("Find Free Port", e);
+			LOGGER.error("Find Free Port", e);
 			throw e;
 		}
 		return port;

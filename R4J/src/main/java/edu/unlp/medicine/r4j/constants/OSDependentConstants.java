@@ -6,19 +6,19 @@ import edu.unlp.medicine.r4j.systemProperties.R4JSystemPropertiesExpected;
 public class OSDependentConstants {
 
 	// "\" in windows  "/" in linux
-	public static String FILE_SEPARATOR = System.getProperty("file.separator");
+	public static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
 	//
-	public static String PATH_TO_R = resolveRHome();
+	public static final String PATH_TO_R = resolveRHome();
 
 
-	public static String USER_HOME = System.getProperty("user.home");
+	public static final String USER_HOME = System.getProperty("user.home");
 
-	public static String DOUBLE_QUOTE = "\"";
+	public static final String DOUBLE_QUOTE = "\"";
 
-	public static String LINE_SEPARATOR = "\n";
+	public static final String LINE_SEPARATOR = "\n";
 
-	public static String BLANK_CHAR = " ";
+	public static final String BLANK_CHAR = " ";
 
 	private static String resolveRHome() {
 		// /* TODO throw exception 

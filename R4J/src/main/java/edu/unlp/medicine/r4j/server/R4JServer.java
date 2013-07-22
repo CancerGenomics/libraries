@@ -48,16 +48,17 @@ public class R4JServer {
 	
 	
 	
-	private static Logger logger = LoggerFactory.getLogger(R4JServer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(R4JServer.class);
 	
 	List<RLibrary> requiredRLibrariesNotInstalled = new ArrayList<RLibrary>();
 	Process rServeOSProcess;
 	
 	
-	int MAX_ATTEMPTS_FOR_STARTING=10;
+	private static final int MAX_ATTEMPTS_FOR_STARTING = 10;
 
-	static R4JServer _instance = null;
-	int port;
+	private static R4JServer instance = null;
+	
+	private int port;
 
 	List<R4JConnection> connections = new ArrayList<R4JConnection>();
 	
@@ -89,7 +90,7 @@ public class R4JServer {
 		try {
 
 			rcmd= startRServeProcess();
-			logger.info("RServe satarted up on port " + port + ". Startup script: " + rcmd);
+			LOGGER.info("RServe satarted up on port " + port + ". Startup script: " + rcmd);
 			
 			createDefaultConnection();
 			
@@ -99,11 +100,11 @@ public class R4JServer {
 		
 		}catch (RequiredLibraryNotPresentException e){
 			//throw e;
-			logger.error("There were some required libraries not installed in R");
+			LOGGER.error("There were some required libraries not installed in R");
 		}catch (Exception e) {
 			final String msg = "Failed to start the Rserve (bridge between Java and R) on port " + port + "."; 
 			final String possibleCauses = "4 possible reasons: 1) you don't have permission to open the free port " + port + " for starting RServe on this machine. Ask the system admin. \n2) the operating system asked you to start RServe.exe (for connecting Bioplat and R) and you said no. In this case, restart Bioplat and accept to establish the connection with R. \n3) you don't have R installed on this folder: " + OSDependentConstants.PATH_TO_R + " \n4) the R doesnt have the RServe package installed (it should not happen if you are using the R coming on Bioplat distribution). In this last case check if you have " + OSDependentConstants.PATH_TO_R + "\\library\\Rserve" + " folder. If not, install RServe using the following R script: install.packages (Rserve)";
-			logger.error("Startup command failed: " + rcmd + ". " + msg+possibleCauses);
+			LOGGER.error("Startup command failed: " + rcmd + ". " + msg+possibleCauses);
 			throw new R4JServerStartException(msg, e, possibleCauses, rcmd);	
 		}
 	}
@@ -151,7 +152,7 @@ public class R4JServer {
 			connections = new ArrayList<R4JConnection>();
 			
 			
-			logger.info("Rserve on port " + port + " was shut down");
+			LOGGER.info("Rserve on port " + port + " was shut down");
 		}
 	}
 
@@ -170,7 +171,7 @@ public class R4JServer {
 	 * @throws R4JScriptExecutionException
 	 */
 	private IR4JConnection createConnectionToRServe() throws R4JCreatConnectionException{
-		logger.info("A connection to Rserve on port " + this.getPort() + " was created");
+		LOGGER.info("A connection to Rserve on port " + this.getPort() + " was created");
 		R4JConnection connection =  new R4JConnection(this);
 		this.connections.add(connection);
 		return connection;
@@ -247,13 +248,13 @@ public class R4JServer {
 		Iterator<RLibrary> requiredLibraries=null;
 
 		if (System.getProperty(R4JSystemPropertiesExpected.R_REQUIRED_LIBRARIES_FILE_PATH_PROPERTY)==null){
-			logger.warn("The file with the R required rlibs: " + R4JSystemPropertiesExpected.R_REQUIRED_LIBRARIES_FILE_PATH_PROPERTY + " was not found");
+			LOGGER.warn("The file with the R required rlibs: " + R4JSystemPropertiesExpected.R_REQUIRED_LIBRARIES_FILE_PATH_PROPERTY + " was not found");
 		}
 		else{
 			
 			requiredLibraries = getReadRequiredLibraries();
 			if (requiredLibraries==null){
-				logger.warn("The file with the R required rlibs: " + R4JSystemPropertiesExpected.R_REQUIRED_LIBRARIES_FILE_PATH_PROPERTY + " was not found");
+				LOGGER.warn("The file with the R required rlibs: " + R4JSystemPropertiesExpected.R_REQUIRED_LIBRARIES_FILE_PATH_PROPERTY + " was not found");
 			}
 			else{
 				doCalculateRequiredRLibrariesNotInstalled(requiredLibraries);
@@ -274,7 +275,7 @@ public class R4JServer {
 		this.setRequiredRLibrariesNotInstalled(rlibraryManager.getLibrariesNotInstalled(requiredLibraries));
 		List<RLibrary> requiredRLibrariesNotInstalled = this.getRequiredRLibrariesNotInstalled();
 		for (RLibrary requiredLibrary : requiredRLibrariesNotInstalled) {
-			logger.warn("The library " + requiredLibrary.getName() + " seems not to be present in R. Try to install it by running: " + requiredLibrary.getInstallation());
+			LOGGER.warn("The library " + requiredLibrary.getName() + " seems not to be present in R. Try to install it by running: " + requiredLibrary.getInstallation());
 		}
 		if (requiredRLibrariesNotInstalled.size()>0) throw new RequiredLibraryNotPresentException(requiredRLibrariesNotInstalled);  
 

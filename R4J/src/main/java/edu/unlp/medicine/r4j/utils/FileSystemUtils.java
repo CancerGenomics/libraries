@@ -13,8 +13,8 @@ import edu.unlp.medicine.r4j.server.R4JConnection;
 
 public class FileSystemUtils {
 
-	public static String R4J_FOLDER = "R4J";
-	private static Logger logger = LoggerFactory.getLogger(R4JConnection.class);
+	public static final String R4J_FOLDER = "R4J";
+	private static final Logger LOGGER = LoggerFactory.getLogger(R4JConnection.class);
 	
 	
 	public static String getUserFolderPath(){
@@ -33,7 +33,7 @@ public class FileSystemUtils {
 			return new BufferedWriter(new FileWriter(file));
 		} catch (IOException e) {
 			
-			logger.error("Error trying to create the file on path: " + filePath + e);
+			LOGGER.error("Error trying to create the file on path: " + filePath + e);
 			throw e;
 		}
 		
