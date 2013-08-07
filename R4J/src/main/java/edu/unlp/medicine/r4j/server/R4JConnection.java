@@ -70,7 +70,8 @@ public class R4JConnection implements IR4JConnection {
 	 */
 	public R4JConnection(R4JServer server) throws R4JCreatConnectionException {
 		this.server = server;
-		this.log = true;
+		
+		this.setShouldRBeLogged();
 		
 		createLogFile();
 		
@@ -96,6 +97,20 @@ public class R4JConnection implements IR4JConnection {
 
 	
 	
+	private void setShouldRBeLogged() {
+		this.log=false;
+		try{
+			this.log= Boolean.valueOf(System.getProperty(R4JSystemPropertiesExpected.R_LOG));	
+		}
+		catch(Exception e){
+			
+		}
+
+		
+	}
+
+
+
 	//////////////////////////////////////////////
 	////////////LOG///////////////////////////////
 	//////////////////////////////////////////////
