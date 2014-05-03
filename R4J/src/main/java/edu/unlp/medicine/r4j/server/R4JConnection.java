@@ -219,6 +219,21 @@ public class R4JConnection implements IR4JConnection {
 	/////////////////API//////////////////////////
 	//////////////////////////////////////////////	
 
+	
+	public void newSession(String name){
+		this.connection.eval("######" + name + "######");
+		this.clean();
+	}
+	
+	public void clean(){
+		try {
+			this.connection.eval("rm(list=ls(all=TRUE))");
+		} catch (R4JScriptExecutionException e) {
+			e.printStackTrace();
+		}
+
+	}
+	
 	/* (non-Javadoc)
 	 * @see edu.unlp.medicine.r4j.server.IR4JConnection#loadLibrary(java.lang.String)
 	 */

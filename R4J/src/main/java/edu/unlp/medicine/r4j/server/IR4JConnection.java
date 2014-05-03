@@ -50,6 +50,16 @@ public interface IR4JConnection {
 			throws R4JScriptExecutionException;
 
 	/**
+	 * It starts a new session. It just writes the name of the session in the log and it cleans all teh variables.
+	 */
+	public void newSession(String name);
+	
+	/**
+	 * It cleans all the variables.
+	 */
+	public void clean();
+	
+	/**
 	 * It assigns in R environment, the result of evaluating the expression to the variable with name variableName.
 	 * @param variableName The variable name in R environment
 	 * @param expression The variable expression in R environment
