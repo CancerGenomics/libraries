@@ -1,0 +1,90 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>bioplat</groupId>
+	<artifactId>parent</artifactId>
+	<version>0.0.3</version>
+	<packaging>pom</packaging>
+
+	<name>Bioplat Parent POM</name>
+	<description>The base POM for all bioplat modules.</description>
+	<inceptionYear>2011</inceptionYear>
+
+	<organization>
+		<name>Bioplat.org</name>
+		<url>http://bioplat.org</url>
+	</organization>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<dropbox.repo>${env.DROPBOX_HOME}\BioPlat\m2repo\</dropbox.repo>
+	</properties>
+
+	<distributionManagement>
+		<repository>
+			<id>dropbox-local</id>
+			<url>file://${dropbox.repo}</url>
+		</repository>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<rules>
+						<requireJavaVersion>
+							<version>[1.6,)</version>
+						</requireJavaVersion>
+					</rules>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+
+	<profiles>
+		<profile>
+			<id>dropbox-local</id>
+			<repositories>
+				<repository>
+					<id>dropbox-local-repository</id>
+					<name>DropBox Local Repository</name>
+					<url>file://${dropbox.repo}</url>
+					<layout>default</layout>
+					<releases>
+						<enabled>true</enabled>
+						<updatePolicy>never</updatePolicy>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</repository>
+			</repositories>
+		</profile>
+	</profiles>
+
+</project>
