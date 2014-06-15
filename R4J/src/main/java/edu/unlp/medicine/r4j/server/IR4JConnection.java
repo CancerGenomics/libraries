@@ -52,12 +52,12 @@ public interface IR4JConnection {
 	/**
 	 * It starts a new session. It just writes the name of the session in the log and it cleans all teh variables.
 	 */
-	public void newSession(String name);
+//	public void newSession(String name);
 	
 	/**
 	 * It cleans all the variables.
 	 */
-	public void clean();
+//	public void clean();
 	
 	/**
 	 * It assigns in R environment, the result of evaluating the expression to the variable with name variableName.
