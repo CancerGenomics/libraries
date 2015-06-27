@@ -4,13 +4,16 @@
 package edu.unlp.medicine.r4j.values;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.RList;
 
 import edu.unlp.medicine.r4j.exceptions.R4JValueMismatchException;
 import edu.unlp.medicine.r4j.server.R4JConnection;
+import edu.unlp.medicine.r4j.transformers.R4JDataMatrixTransformer;
 
 /**
  * This abstract class tops the hierarchy representing the possible values.
@@ -22,6 +25,7 @@ public abstract class R4JValue {
 
 	public R4JValue(final REXP anAdaptee) {
 		this.adaptee = anAdaptee;
+		
 	}
 
 	public REXP getNativeValue() {
@@ -36,7 +40,7 @@ public abstract class R4JValue {
 	/**
 	 * This method converts the object into a native java object.
 	 * 
-	 * @return
+	 * @return a native java object
 	 */
 	public abstract Object asNativeJavaObject() throws R4JValueMismatchException;
 
@@ -68,6 +72,66 @@ public abstract class R4JValue {
 
 	}
 
+	/**
+	 * Just to convert r Dataframes into StringDataMatrix.
+	 * If there is no colnames set in the R dataframe, it will set default column names (column1, column2, ...)
+	 * If there is no rownames set in the R dataframe, it will set default column names (Row1, Row2, ...) 
+	 */
+	public R4JStringDataMatrix asStringDataMatrix(){
+		RList rList;
+		
+		try {
+			rList = this.getAdaptee().asList();
+			int ncols = rList.size();
+			int nrows = rList.at(0).length();
+			String[][] matrix = new String[nrows][ncols];
+			String[] actualCol; 
+			for (int i=0; i<ncols; i++) {
+				actualCol = rList.at(i).asStrings();
+				for (int j = 0; j < actualCol.length; j++) {
+					matrix[j][i]=actualCol[j];
+				}
+				
+			}
+			
+			//for (int i=0; i<ncols; i++) matrix[i]=rList.at(i).asStrings();
+			
+			//cols
+			REXP colnamesREXP = this.getAdaptee().getAttribute("names");
+			List<String> colNames;
+			if (colnamesREXP!=null){
+				colNames = Arrays.asList(colnamesREXP.asStrings());
+			}
+			else{
+				colNames=new ArrayList<String>();
+				for (int i = 0; i < ncols; i++) {
+					colNames.add("Column" + i);
+				}
+			}
+
+			
+			//rows
+			REXP rownamesREXP = this.getAdaptee().getAttribute("row.names");
+			List<String> rowNames;
+			if (rownamesREXP!=null){
+				rowNames = Arrays.asList(rownamesREXP.asStrings());
+			}
+			else{
+				rowNames=new ArrayList<String>();
+				for (int i = 0; i < matrix[1].length; i++) {
+					rowNames.add("row" + i);
+				}
+			}
+			
+			
+			return new R4JStringDataMatrix(colNames, rowNames, matrix);
+		} catch (REXPMismatchException e) {
+			e.printStackTrace();
+		}
+		return null;
+		
+		
+	}
 	
 	public String[] asStrings() {
 		String[] result = null;
