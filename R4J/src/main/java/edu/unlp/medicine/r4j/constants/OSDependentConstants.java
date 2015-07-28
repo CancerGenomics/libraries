@@ -1,6 +1,5 @@
 package edu.unlp.medicine.r4j.constants;
 
-import edu.unlp.medicine.r4j.exceptions.R4JServerStartException;
 import edu.unlp.medicine.r4j.systemProperties.R4JSystemPropertiesExpected;
 
 public class OSDependentConstants {

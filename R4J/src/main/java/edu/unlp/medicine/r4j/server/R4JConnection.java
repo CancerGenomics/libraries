@@ -49,13 +49,15 @@ import edu.unlp.medicine.r4j.values.R4JValue;
  * 
  */
 public class R4JConnection implements IR4JConnection {
-	// Logger Object
+	// Logger Object 
+	
 	private static Logger logger = LoggerFactory.getLogger(R4JConnection.class);
 
 	static final int MAX_ATTEMPTS_FOR_STARTING = 10;
 
 	private RConnection connection;
 	R4JServer server;
+	int environments=0;
 
 	boolean log = false;
 	BufferedWriter rLog = null;
@@ -507,10 +509,12 @@ public class R4JConnection implements IR4JConnection {
 			result = R4JTransformerUtils.transform(value);
 			return result;
 		} catch (RserveException e) {
-			logger.error("Error con R", e);
-
+			//logger.error("Error evaluating the following expression in R: ");
+			
 			String errorMessage = "Error evaluating the expression: "
-					+ expression;
+					+ "\n#####################################################################################################\n" 
+					+ expression
+					+ "\n#####################################################################################################";
 			handleScrtipError(errorMessage, e, expression);
 		} catch (R4JTransformerNotFoundException e) {
 			String errorMessage = "Error transforming the result of evaluating: "
@@ -758,6 +762,18 @@ public class R4JConnection implements IR4JConnection {
 
 	public void setTempLogs(Map<String, StringBuilder> tempLogs) {
 		this.tempLogs = tempLogs;
+	}
+
+	@Override
+	public String newEnvironment() {
+		String envName = "env" + environments++;
+		try {
+			this.eval(envName + "<-  new.env()");
+			return envName;
+		} catch (R4JScriptExecutionException e) {
+			logger.error("Error creating an environment!!!!");
+		}
+		return null;
 	}
 
 }

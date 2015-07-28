@@ -176,5 +176,11 @@ public interface IR4JConnection {
 	 * It closes the Rserve connection and closes the log file.	
 	 */
 	public abstract void close();
+	
+	/**
+	 * It creates a new R environment (it is like a r session)
+	 * @return
+	 */
+	public String newEnvironment();
 
 }

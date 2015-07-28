@@ -40,7 +40,7 @@ public abstract class R4JValue {
 	/**
 	 * This method converts the object into a native java object.
 	 * 
-	 * @return a native java object
+	 * @return
 	 */
 	public abstract Object asNativeJavaObject() throws R4JValueMismatchException;
 
@@ -98,7 +98,7 @@ public abstract class R4JValue {
 			
 			//cols
 			REXP colnamesREXP = this.getAdaptee().getAttribute("names");
-			List<String> colNames;
+			List<String> colNames=null;
 			if (colnamesREXP!=null){
 				colNames = Arrays.asList(colnamesREXP.asStrings());
 			}
@@ -112,7 +112,7 @@ public abstract class R4JValue {
 			
 			//rows
 			REXP rownamesREXP = this.getAdaptee().getAttribute("row.names");
-			List<String> rowNames;
+			List<String> rowNames=null;
 			if (rownamesREXP!=null){
 				rowNames = Arrays.asList(rownamesREXP.asStrings());
 			}
