@@ -49,18 +49,19 @@ import edu.unlp.medicine.r4j.values.R4JValue;
  * 
  */
 public class R4JConnection implements IR4JConnection {
-	// Logger Object
+	// Logger Object 
+	
 	private static Logger logger = LoggerFactory.getLogger(R4JConnection.class);
 
 	static final int MAX_ATTEMPTS_FOR_STARTING = 10;
 
 	private RConnection connection;
-	R4JServer server;
+	private R4JServer server;
 
 	boolean log = false;
-	BufferedWriter rLog = null;
+	private BufferedWriter rLog = null;
 
-	Map<String, StringBuilder> tempLogs = new HashMap<String, StringBuilder>();
+	private Map<String, StringBuilder> tempLogs = new HashMap<String, StringBuilder>();
 
 	// ////////////////////////////////////////////
 	// //////////CONSTRUCTOR///////////////////////
@@ -69,8 +70,7 @@ public class R4JConnection implements IR4JConnection {
 	/**
 	 * Connection with no log.
 	 * 
-	 * @param connectionName
-	 * @param server
+	 * @param server the rserve proxy instance
 	 * @throws R4JCreatConnectionException
 	 */
 	public R4JConnection(R4JServer server) throws R4JCreatConnectionException {
@@ -85,8 +85,9 @@ public class R4JConnection implements IR4JConnection {
 		RserveException lastExc = null;
 		while (attempt < MAX_ATTEMPTS_FOR_STARTING && !started) {
 			try {
-				connection = new RConnection(RServeConfigurator.getInstance()
-						.getHost(), server.getPort());
+				connection = new RConnection(findHost(), findServerPort());
+				if (connection.needLogin())
+					connection.login("r", "R.1");
 				started = true;
 			} catch (RserveException e) {
 				attempt++;
@@ -101,13 +102,22 @@ public class R4JConnection implements IR4JConnection {
 
 	}
 
+	private int findServerPort() {
+		return server.getPort();
+	}
+
+	private String findHost() {
+		return RServeConfigurator.getInstance().getHost(server);
+	}
+
 	private void setShouldRBeLogged() {
+		//TODO se lo tendría que pedir a RServeConfigurator
 		this.log = false;
 		try {
 			this.log = Boolean.valueOf(System
 					.getProperty(R4JSystemPropertiesExpected.R_LOG));
 		} catch (Exception e) {
-
+			logger.error("should R be logged had been failed to set",e);
 		}
 
 	}
@@ -144,8 +154,8 @@ public class R4JConnection implements IR4JConnection {
 	 * It allows to register a temporal log, for example to get the whole log of
 	 * an operation composed of many invokes to R4JConnection
 	 * 
-	 * @param logName
-	 * @return
+	 * @param logName log file name
+	 * @return the temporal log
 	 */
 	public String getTemporalLog(String logName) {
 		StringBuilder tl = this.getTempLogs().get(logName);
@@ -508,7 +518,7 @@ public class R4JConnection implements IR4JConnection {
 			return result;
 		} catch (RserveException e) {
 			logger.error("Error con R", e);
-
+			
 			String errorMessage = "Error evaluating the expression: "
 					+ expression;
 			handleScrtipError(errorMessage, e, expression);
@@ -685,7 +695,7 @@ public class R4JConnection implements IR4JConnection {
 	/**
 	 * Adds a comment to the R log
 	 * 
-	 * @param comment
+	 * @param comment comment to write in logs
 	 */
 	public void addRComment(String comment) {
 		this.writeLog(comment);
@@ -722,7 +732,7 @@ public class R4JConnection implements IR4JConnection {
 	/**
 	 * It logs an error
 	 * 
-	 * @param errorMessage
+	 * @param errorMessage message to log
 	 */
 	public void logError(String errorMessage) {
 		try {
@@ -745,7 +755,7 @@ public class R4JConnection implements IR4JConnection {
 				rLog.flush();
 			}
 			for (StringBuilder sb : this.getTempLogs().values()) {
-				sb.append(expression + "\n");
+				sb.append(expression).append("\n");
 			}
 		} catch (IOException e) {
 			logger.error("It was not possible to write the rLog file. " + e);
