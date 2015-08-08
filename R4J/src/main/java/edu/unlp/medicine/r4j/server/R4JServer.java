@@ -3,14 +3,11 @@ package edu.unlp.medicine.r4j.server;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.SystemUtils;
-import org.rosuda.REngine.Rserve.RserveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,13 +181,17 @@ public class R4JServer {
 	private IR4JConnection createConnectionToRServe() throws R4JCreatConnectionException {
 		try {
 			R4JConnection connection = new R4JConnection(this);
-			LOGGER.info("A connection to Rserve on port " + this.getPort() + " was created");
+			LOGGER.info("A connection to Rserve at " + rserveLocation() + " was created");
 			this.connections.add(connection);
 			return connection;
 		} catch (R4JCreatConnectionException e) {
 			LOGGER.error("Error trying to get a conection to the R server" + e);
 			throw e;
 		}
+	}
+
+	private String rserveLocation() {
+		return getRserveHost()+":"+getPort();
 	}
 
 	// //////////////////////////////////////////////////
@@ -250,6 +251,8 @@ public class R4JServer {
 	public int getPort() {
 		return RServeConfigurator.getInstance().getPort();
 	}
+
+	private String getRserveHost(){ return RServeConfigurator.getInstance().getHost();}
 
 	private void setTheRLibraryInsideR4JDistributionAsTheOnlyRLibFolder() throws R4JCreatConnectionException {
 		try {

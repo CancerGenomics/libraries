@@ -30,7 +30,7 @@ public class RServeConfigurator {
 		return INSTANCE;
 	}
 
-	public String getHost(R4JServer server) {
+	public String getHost() {
 		return host;
 	}
 
