@@ -12,7 +12,7 @@ public class RUtils {
         String[] parts = filePath.split("\\"+ OSDependentConstants.FILE_SEPARATOR);
         
         ArrayList<String> pathParts = new ArrayList<String>();
-		int i;
+        int i=0;
         for (i = 0; i < parts.length-1; i++) {
         	pathParts.add(StringUtils.addQuotes(parts[i]));
         	pathParts.add(".Platform$file.sep");
@@ -30,10 +30,10 @@ public class RUtils {
 	}
 
 	public static String javaStringListAsRStringList(List<String> aList){
-			StringBuilder result = new StringBuilder("c(\"");
+			StringBuffer result = new StringBuffer("c(\"");
 			
 			for (String element : aList) {
-				result.append(element).append("\",\"");
+				result.append(element  + "\",\"");
 			}
 			result.delete(result.length()-3, result.length());
 			result.append("\")");
