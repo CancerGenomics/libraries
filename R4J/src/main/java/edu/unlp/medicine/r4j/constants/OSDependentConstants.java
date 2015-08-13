@@ -20,12 +20,17 @@ public class OSDependentConstants {
 	public static final String BLANK_CHAR = " ";
 
 	private static String resolveRHome() {
-		// /* TODO throw exception 
-		String result = System.getProperty(R4JSystemPropertiesExpected.R_HOME_BIOPLAT_PROPERTY);
-		
-		
-		result = result.substring(0, result.length());
-		return result + FILE_SEPARATOR + "bin" + System.getProperty("file.separator") + "R";
+		try {
+			// /* TODO throw exception
+			String result = System.getProperty(R4JSystemPropertiesExpected.R_HOME_BIOPLAT_PROPERTY);
+
+
+			result = result.substring(0, result.length());
+			return result + FILE_SEPARATOR + "bin" + System.getProperty("file.separator") + "R";
+		}catch (Exception e ){
+			//FIXME
+			return "/home/R/"; //no sirve para nada ahora...
+		}
 
 	}
 }
