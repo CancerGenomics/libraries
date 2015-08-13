@@ -76,7 +76,7 @@ public class R4JStringDataMatrix {
 
 	public String getCellValue(String rowName, String colName) {
 		try {
-			return data[colnames.indexOf(rowName)][colnames.indexOf(colName)];
+			return data[rownames.indexOf(rowName)][colnames.indexOf(colName)];
 		} catch (IndexOutOfBoundsException e) {
 			LOGGER.error("Error in col and/or row. You tried to access: row="+ rowName + "   col=" + colName);
 		}
