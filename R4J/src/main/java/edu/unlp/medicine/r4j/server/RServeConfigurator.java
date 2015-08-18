@@ -42,7 +42,7 @@ public class RServeConfigurator {
 	 * @throws IOException
 	 * @deprecated no va más
 	 */
-	private int getFreePort() throws IOException {
+	public int getFreePort() throws IOException {
 		int port;
 		try {
 			port = SocketUtils.findFreePort();

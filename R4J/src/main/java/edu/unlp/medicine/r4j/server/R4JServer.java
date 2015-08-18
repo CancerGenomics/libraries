@@ -3,11 +3,13 @@ package edu.unlp.medicine.r4j.server;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +99,10 @@ public class R4JServer {
 //			rcmd = startRServeProcess();
 //			LOGGER.info("RServe satarted up on port " + port + ". Startup script: " + rcmd);
 //
-            initializeR();
+            
+			if (Boolean.getBoolean("R_LOCAL")) 
+					startRServeProcess(); 
+			initializeR();
 //
 		} catch (RequiredLibraryNotPresentException e) {
 			// throw e;
@@ -170,6 +175,9 @@ public class R4JServer {
 	// //////////////////////FUTURE API///////////////////
 	// //////////////////////////////////////////////////
 
+	
+	
+	
 	/**
 	 * It creates and returns a connection with the RServer server. It is
 	 * private because it is not working in Windows RServe the creation of more
@@ -198,35 +206,35 @@ public class R4JServer {
 	// //////////////////////PRIVATE/////////////////////
 	// //////////////////////////////////////////////////
 
-//	/**
-//	 * It starts the R process in the OS.
-//	 *
-//	 * @return
-//	 * @throws IOException
-//	 * @throws InterruptedException
-//	 */
-//    @Deprecated //no se usa
-//	private String startRServeProcess() throws IOException, InterruptedException {
-//		try {
-//			// FIXME parametrizar que el puerto de Rserve
-//			// ATENCIóN: en linux es fijo, ya que Rserve
-//			// se levanta por fuera de la aplicación
-//
-//			port = RServeConfigurator.getInstance().getFreePort();
-//			if (SystemUtils.IS_OS_LINUX)
-//				port = 6311;
-//			String rcmd = OSDependentConstants.PATH_TO_R + " --save --restore -q -e library('Rserve');Rserve(port=" + port + ")";
-//			rServeOSProcess = Runtime.getRuntime().exec(rcmd);
-//			LOGGER.debug("Starting Rserve with command: " + rcmd);
-//			rServeOSProcess.waitFor();
-//			LOGGER.debug("Command to start rserve terminated");
-//			return rcmd;
-//		} catch (Exception e) {
-//			LOGGER.error("Error starting the rserve process" + e);
-//			return "nop";
-//		}
-//
-//	}
+	/**
+	 * It starts the R process in the OS.
+	 *
+	 * @return
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+    @Deprecated //no se usa
+	private String startRServeProcess() throws IOException, InterruptedException {
+		try {
+			// FIXME parametrizar que el puerto de Rserve
+			// ATENCIóN: en linux es fijo, ya que Rserve
+			// se levanta por fuera de la aplicación
+
+			port = RServeConfigurator.getInstance().getFreePort();
+			if (SystemUtils.IS_OS_LINUX)
+				port = 6311;
+			String rcmd = OSDependentConstants.PATH_TO_R + " --save --restore -q -e library('Rserve');Rserve(port=" + port + ")";
+			rServeOSProcess = Runtime.getRuntime().exec(rcmd);
+			LOGGER.debug("Starting Rserve with command: " + rcmd);
+			rServeOSProcess.waitFor();
+			LOGGER.debug("Command to start rserve terminated");
+			return rcmd;
+		} catch (Exception e) {
+			LOGGER.error("Error starting the rserve process" + e);
+			return "nop";
+		}
+
+	}
 
 	/**
 	 * Checks if the server is running.

@@ -9,9 +9,9 @@ public class SocketUtils {
 
 	public static int findFreePort() throws IOException {
 		try{
-			ServerSocket server = new ServerSocket(RServeConfigurator.DEFAULT_PORT);
+			ServerSocket server = new ServerSocket(RServeConfigurator.getInstance().getPort());
 			server.close();
-			return RServeConfigurator.DEFAULT_PORT;
+			return RServeConfigurator.getInstance().getPort();
 		}catch(IOException e){
 			ServerSocket server = new ServerSocket(0);
 			int port = server.getLocalPort();

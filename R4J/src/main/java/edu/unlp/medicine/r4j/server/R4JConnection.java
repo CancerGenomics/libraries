@@ -107,7 +107,7 @@ public class R4JConnection implements IR4JConnection {
 	}
 
 	private String findHost() {
-		return RServeConfigurator.getInstance().getHost(server);
+		return RServeConfigurator.getInstance().getHost();
 	}
 
 	private void setShouldRBeLogged() {
