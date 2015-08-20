@@ -214,5 +214,18 @@ public abstract class R4JValue {
 		return this.getAdaptee().isNumeric();
 		
 	}
+	
+	public byte[] asBytes(){
+		byte[] result = null;
+		try {
+			if (this.getAdaptee().length() > 0)
+				result = this.getAdaptee().asBytes();
+		} catch (REXPMismatchException e) {
+			// TODO log
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
 
 }

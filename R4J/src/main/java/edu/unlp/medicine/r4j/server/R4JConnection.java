@@ -558,59 +558,7 @@ public class R4JConnection implements IR4JConnection {
 	 * 
 	 * @see edu.unlp.medicine.r4j.server.IR4JConnection#plot(java.lang.String)
 	 */
-	@Override
-	public byte[] executePlotAndGetImage(final String plotExpression)
-			throws R4JScriptExecutionException {
-		byte[] imageAsByte = null;
-		writeLog(plotExpression);
-		try {
-			String device = "jpeg"; // device we'll call (this would work with
-									// pretty much any bitmap device)
-
-			// we are careful here - not all R binaries support jpeg so we
-			// rather capture any failures
-			REXP xp = this.connection.parseAndEval("try(" + device
-					+ "('test.jpg',quality=100, width = 300, height = 300))");
-
-			if (xp.inherits("try-error")) { // if the result is of the class
-											// try-error then there was a
-											// problem
-				logger.error("Can't open " + device + " graphics device:\n"
-						+ xp.asString());
-				// this is analogous to 'warnings', but for us it's sufficient
-				// to get just the 1st warning
-				REXP w = this.connection
-						.eval("if (exists('last.warning') && length(last.warning)>0) names(last.warning)[1] else 0");
-				if (w.isString())
-					logger.error(w.asString());
-				return null;
-			}
-
-			this.connection.parseAndEval(plotExpression + "; dev.off()");
-
-			// There is no I/O API in REngine because it's actually more
-			// efficient to use R for this we limit the file size to 1MB which
-			// should be sufficient and we delete the file as well
-			xp = this.connection
-					.parseAndEval("r=readBin('test.jpg','raw',1024*1024); unlink('test.jpg'); r");
-			imageAsByte = xp.asBytes();
-
-		} catch (RserveException rse) {
-			logger.error("Error con R", rse);
-
-			String errorMessage = "Error plotting image";
-			handleScrtipError(errorMessage, rse, plotExpression);
-		} catch (REXPMismatchException mme) {
-			String errorMessage = "Error plotting image";
-			handleScrtipError(errorMessage, mme, plotExpression);
-		} catch (Exception e) {
-			String errorMessage = "Error plotting image";
-			handleScrtipError(errorMessage, e, plotExpression);
-		}
-
-		return imageAsByte;
-	}
-
+	
 	// /* (non-Javadoc)
 	// * @see
 	// edu.unlp.medicine.r4j.server.IR4JConnection#plotSurvivalCurve(java.lang.String)

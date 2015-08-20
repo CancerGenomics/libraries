@@ -145,13 +145,6 @@ public interface IR4JConnection {
 	public abstract void voidEval(final String expression)
 			throws R4JScriptExecutionException;
 
-	/**
-	 * It plots the expression. Take care that the variables you are using in the expression should be previously set. This expression is just the call to the function plot(expression);
-	 * @param expressionToPlot The plot call. It should be of the form plot(expresssion).
-	 *  
-	 */
-	public abstract byte[] executePlotAndGetImage(final String expressionToPlot)
-			throws R4JScriptExecutionException;
 
 
 	/**
