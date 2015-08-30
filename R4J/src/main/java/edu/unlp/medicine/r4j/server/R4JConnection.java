@@ -52,7 +52,7 @@ public class R4JConnection implements IR4JConnection {
 	// Logger Object
 	private static Logger logger = LoggerFactory.getLogger(R4JConnection.class);
 
-	static final int MAX_ATTEMPTS_FOR_STARTING = 10;
+	static final int MAX_ATTEMPTS_FOR_STARTING = 3;
 
 	private RConnection connection;
 	private R4JServer server;
@@ -85,6 +85,7 @@ public class R4JConnection implements IR4JConnection {
 		RserveException lastExc = null;
 		while (attempt < MAX_ATTEMPTS_FOR_STARTING && !started) {
 			try {
+				logger.debug("Trying to connect " +  findHost() + ":" + findServerPort() + ". Attempt " + attempt);
 				connection = new RConnection(findHost(), findServerPort());
 				if (connection.needLogin())
 					connection.login("r", "R.1");

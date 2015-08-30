@@ -9,23 +9,16 @@ import edu.unlp.medicine.r4j.utils.SocketUtils;
 
 public class RServeConfigurator {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RServeConfigurator.class);
-	public static final String DEFAULT_PORT = "6311";
-	private static final String DEFAULT_HOST = "127.0.0.1";
-	private String port = parameter("bioplat.rserve.port", DEFAULT_PORT);
-	//inicializa el host segun el parámetro del sistema y si no está definido usa localhost
-	private String host = parameter("bioplat.rserve.host", DEFAULT_HOST);
-	// /(System.getProperty("bioplat.rserve.host",null)!=null)?System.getProperty("host"):"127.0.0.1";
+	public static final int DEFAULT_PORT = 6311;
+	public static final String DEFAULT_HOST = "127.0.0.1";
+	private int port;
+	private String host; 
+	
 
-	private static RServeConfigurator INSTANCE = new RServeConfigurator();
+	private static RServeConfigurator INSTANCE = new RServeConfigurator(); 
 
-	private String parameter(String varname, String def) {
-		String varvalue = System.getProperty(varname, null);
-		if (varvalue != null)
-			return varvalue;
-		else
-			return def;
-	}
-
+	private RServeConfigurator() {}
+	
 	public static  RServeConfigurator getInstance() {
 		return INSTANCE;
 	}
@@ -34,24 +27,11 @@ public class RServeConfigurator {
 		return host;
 	}
 
-	public int getPort(){ return Integer.valueOf(port); 	}
+	public int getPort(){ return port;}
 
-	/**
-	 *
-	 * @return el free port...
-	 * @throws IOException
-	 * @deprecated no va más
-	 */
-	public int getFreePort() throws IOException {
-		int port;
-		try {
-			port = SocketUtils.findFreePort();
-		} catch (IOException e) {
-			LOGGER.error("Find Free Port", e);
-			throw e;
-		}
-		return port;
-
+	void setHost(String host) {
+		this.host = host;
 	}
 
+	void setPort(int port){ this.port = port;}
 }

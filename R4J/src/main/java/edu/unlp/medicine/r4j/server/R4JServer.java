@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.SystemUtils;
+import org.rosuda.REngine.Rserve.RserveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import edu.unlp.medicine.r4j.rLibrary.RLibrary;
 import edu.unlp.medicine.r4j.rLibrary.RLibraryManager;
 import edu.unlp.medicine.r4j.rLibrary.RLibraryScanner;
 import edu.unlp.medicine.r4j.systemProperties.R4JSystemPropertiesExpected;
+import edu.unlp.medicine.r4j.utils.SocketUtils;
 
 /**
  * It represents an RServer server. You can have as many servers as you need. It
@@ -54,11 +56,11 @@ public class R4JServer {
 	private List<RLibrary> requiredRLibrariesNotInstalled = new ArrayList<RLibrary>();
 	private  Process rServeOSProcess;
 
-	private static final int MAX_ATTEMPTS_FOR_STARTING = 10;
+	//private static final int MAX_ATTEMPTS_FOR_STARTING = 3;
 
-	private static R4JServer instance = null;
+	//private static R4JServer instance = null;
 
-	private int port;
+	//private int port;
 
 	List<R4JConnection> connections = new ArrayList<R4JConnection>();
 
@@ -99,9 +101,21 @@ public class R4JServer {
 //			rcmd = startRServeProcess();
 //			LOGGER.info("RServe satarted up on port " + port + ". Startup script: " + rcmd);
 //
-            
-			if (Boolean.getBoolean("R_LOCAL")) 
-					startRServeProcess(); 
+            // Checks if connection is local. If not, set the remote conection. 
+			if(!isLocalConnection()){
+				String host = System.getProperty("bioplat.rserve.host",null);
+				String port = System.getProperty("bioplat.rserve.port",null);
+				// If values are not setted up, start local server.
+				if(host == null || port == null){
+					LOGGER.warn("bioplat.rserve.host or bioplat.rserve.port are not present. Setting up local conexion ");
+					startRServeProcess();
+				}else{
+					RServeConfigurator.getInstance().setHost(host);
+					RServeConfigurator.getInstance().setPort(Integer.parseInt(port));
+				}
+			}else{
+				startRServeProcess();
+			}
 			initializeR();
 //
 		} catch (RequiredLibraryNotPresentException e) {
@@ -109,8 +123,8 @@ public class R4JServer {
 			//FIXME este error no pasa más
 			LOGGER.error("There were some required libraries not installed in R");
 		} catch (Exception e) {
-			final String msg = "Failed to start the Rserve (bridge between Java and R) on port " + port + ".";
-			final String possibleCauses = " 4 possible reasons: 1) you don't have permission to open the free port " + port + " for starting RServe on this machine. Ask the system admin. \n2) the operating system asked you to start RServe.exe (for connecting Bioplat and R) and you said no. In this case, restart Bioplat and accept to establish the connection with R. \n3) you don't have R installed on this folder: " + OSDependentConstants.PATH_TO_R + " \n4) the R doesnt have the RServe package installed (it should not happen if you are using the R coming on Bioplat distribution). In this last case check if you have " + OSDependentConstants.PATH_TO_R + "\\library\\Rserve" + " folder. If not, install RServe using the following R script: install.packages (Rserve)";
+			final String msg = "Failed to start the Rserve (bridge between Java and R) on port " + RServeConfigurator.getInstance().getPort() + ".";
+			final String possibleCauses = " 4 possible reasons: 1) you don't have permission to open the free port " + RServeConfigurator.getInstance().getPort() + " for starting RServe on this machine. Ask the system admin. \n2) the operating system asked you to start RServe.exe (for connecting Bioplat and R) and you said no. In this case, restart Bioplat and accept to establish the connection with R. \n3) you don't have R installed on this folder: " + OSDependentConstants.PATH_TO_R + " \n4) the R doesnt have the RServe package installed (it should not happen if you are using the R coming on Bioplat distribution). In this last case check if you have " + OSDependentConstants.PATH_TO_R + "\\library\\Rserve" + " folder. If not, install RServe using the following R script: install.packages (Rserve)";
 			//LOGGER.error("Startup command failed: " + rcmd + ". " + msg + possibleCauses);
 			throw new R4JServerStartException(msg, e, possibleCauses, "nop");
 		}
@@ -146,29 +160,31 @@ public class R4JServer {
 	 * 
 	 * @throws R4JServerShutDownException
 	 */
-	public void shutDown() throws R4JServerShutDownException{
-	//ahora no se baja el server, es compartido y remoto!!
-	LOGGER.warn("Intento de bajar el server! ahora ya no se baja más");
-//        if (this.getDefaultConnection() != null) {
-//			// It uses the default connection to shutdown the server. The only
-//			// way i found to shutdown the process cleanly.
-//			try {
-//
-//				this.getDefaultConnection().getConnection().shutdown();
-//				rServeOSProcess.destroy();
-//
-//			} catch (RserveException e) {
-//				throw new R4JServerShutDownException("Error shtting down the server. The process will be alive. Kill him from OS.", e);
-//			}
-//
-//			for (R4JConnection connection : this.connections) {
-//				connection.close();
-//			}
-//
-//			connections = new ArrayList<R4JConnection>();
-//
-//			LOGGER.info("Rserve on port " + port + " was shut down");
-//		}
+	public void shutDown() throws R4JServerShutDownException {
+		// ahora no se baja el server, es compartido y remoto!!
+		
+		if (isLocalConnection()) {
+			if (this.getDefaultConnection() != null) {
+				// It uses the default connection to shutdown the server. The
+				// only
+				// way i found to shutdown the process cleanly.
+				try {
+					this.getDefaultConnection().getConnection().shutdown();
+					rServeOSProcess.destroy();
+				} catch (RserveException e) {
+					throw new R4JServerShutDownException(
+							"Error shtting down the server. The process will be alive. Kill him from OS.",e);
+				}
+
+				for (R4JConnection connection : this.connections) {
+					connection.close();
+				}
+
+				connections = new ArrayList<R4JConnection>();
+
+				LOGGER.info("Rserve on port " + RServeConfigurator.getInstance().getPort()	+ " was shut down");
+			}
+		}
 	}
 
 	// //////////////////////////////////////////////////
@@ -213,17 +229,25 @@ public class R4JServer {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-    @Deprecated //no se usa
+   
 	private String startRServeProcess() throws IOException, InterruptedException {
 		try {
 			// FIXME parametrizar que el puerto de Rserve
 			// ATENCIóN: en linux es fijo, ya que Rserve
 			// se levanta por fuera de la aplicación
 
-			port = RServeConfigurator.getInstance().getFreePort();
+			/*port = SocketUtils.findFreePort();
 			if (SystemUtils.IS_OS_LINUX)
-				port = 6311;
-			String rcmd = OSDependentConstants.PATH_TO_R + " --save --restore -q -e library('Rserve');Rserve(port=" + port + ")";
+				port = 6311;*/
+			
+			// Check if the port is avaiable
+			if(SocketUtils.isFreePort(RServeConfigurator.DEFAULT_PORT)){
+				RServeConfigurator.getInstance().setPort(RServeConfigurator.DEFAULT_PORT);
+			}else{
+				RServeConfigurator.getInstance().setPort(SocketUtils.findFreePort());
+			}
+			RServeConfigurator.getInstance().setHost(RServeConfigurator.DEFAULT_HOST);
+			String rcmd = OSDependentConstants.PATH_TO_R + " --save --restore -q -e library('Rserve');Rserve(port=" + RServeConfigurator.getInstance().getPort() + ")";
 			rServeOSProcess = Runtime.getRuntime().exec(rcmd);
 			LOGGER.debug("Starting Rserve with command: " + rcmd);
 			rServeOSProcess.waitFor();
@@ -268,7 +292,7 @@ public class R4JServer {
 			// paquetes se van a buscar solamente en R_HOME\library
 			R4JConnection connection = this.getDefaultConnection();
 			connection.eval("Sys.unsetenv(\"R_LIBS_SITE\")");
-			connection.eval("Sys.unsetenv(\"R_LIBS_USER\")");
+			connection.eval("Sys.unsetenv(\"er\")");
 		} catch (R4JScriptExecutionException e1) {
 			LOGGER.error("Trying to unset enviroment variables", e1);
 		} catch (Exception e) {
@@ -363,5 +387,10 @@ public class R4JServer {
 
 		return reader;
 	}
+	
+	private boolean isLocalConnection(){
+		return Boolean.valueOf(System.getProperty("R_LOCAL",null));
+	}
+	
 
 }
