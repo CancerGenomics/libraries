@@ -56,8 +56,10 @@ public abstract class R4JValue {
 	public List<String> asStringArrayList() {
 		List<String> strings = new ArrayList<String>();
 		String[] stringsArray = this.asStrings();
-		for (String string: stringsArray) {
-			strings.add(string);
+		if (stringsArray != null){
+			for (String string: stringsArray) {
+				strings.add(string);
+			}
 		}
 		return strings;
 	}
@@ -89,7 +91,11 @@ public abstract class R4JValue {
 			for (int i=0; i<ncols; i++) {
 				actualCol = rList.at(i).asStrings();
 				for (int j = 0; j < actualCol.length; j++) {
-					matrix[j][i]=actualCol[j];
+					if (actualCol[j] != null){
+						matrix[j][i]=actualCol[j].trim();
+					} else {
+						matrix[j][i]=actualCol[j];
+					}
 				}
 				
 			}
@@ -100,7 +106,7 @@ public abstract class R4JValue {
 			REXP colnamesREXP = this.getAdaptee().getAttribute("names");
 			List<String> colNames=null;
 			if (colnamesREXP!=null){
-				colNames = Arrays.asList(colnamesREXP.asStrings());
+				colNames = Arrays.asList(trimStringsVector(colnamesREXP.asStrings()) );
 			}
 			else{
 				colNames=new ArrayList<String>();
@@ -114,7 +120,7 @@ public abstract class R4JValue {
 			REXP rownamesREXP = this.getAdaptee().getAttribute("row.names");
 			List<String> rowNames=null;
 			if (rownamesREXP!=null){
-				rowNames = Arrays.asList(rownamesREXP.asStrings());
+				rowNames = Arrays.asList(trimStringsVector(rownamesREXP.asStrings()) );
 			}
 			else{
 				rowNames=new ArrayList<String>();
@@ -227,5 +233,15 @@ public abstract class R4JValue {
 		return result;
 	}
 	
+	private String[] trimStringsVector(String[] vector){
+		
+		for (int i = 0; i < vector.length; i++) {
+			if (vector[i] != null){
+				vector[i].trim();
+			}
+		}
+		
+		return vector;
+	}
 
 }
