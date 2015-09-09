@@ -57,6 +57,7 @@ public class R4JConnection implements IR4JConnection {
 	private RConnection connection;
 	private R4JServer server;
 	private int environments=0;
+	private String logScript;
 
 	boolean log = false;
 	private BufferedWriter rLog = null;
@@ -267,6 +268,7 @@ public class R4JConnection implements IR4JConnection {
 	public void loadLibrary(final String libraryName)
 			throws R4JScriptExecutionException {
 		String expression = "library(" + libraryName + ")";
+		addLogScript(expression); 
 		try {
 			writeLog(expression);
 			this.connection.voidEval(expression);
@@ -291,6 +293,7 @@ public class R4JConnection implements IR4JConnection {
 	public void assign(String variableName, String expression)
 			throws R4JScriptExecutionException {
 		writeLog(variableName + "<-" + expression);
+		addLogScript(variableName + "<-" + expression);
 		try {
 			// this.connection.eval(expression);
 			connection.eval(variableName + "<-" + expression);
@@ -381,6 +384,7 @@ public class R4JConnection implements IR4JConnection {
 	@Override
 	public boolean existVar(String varName) throws R4JScriptExecutionException {
 		String script = "exists(\"" + varName + "\")";
+		addLogScript(script);
 		writeLog(script);
 		try {
 			REXP rexp = connection.eval(script);
@@ -409,6 +413,7 @@ public class R4JConnection implements IR4JConnection {
 	@Override
 	public R4JValue getVarValue(String variableName)
 			throws R4JScriptExecutionException {
+		addLogScript(variableName);
 		writeLog(variableName);
 		try {
 			REXP rexp = connection.eval(variableName);
@@ -467,6 +472,7 @@ public class R4JConnection implements IR4JConnection {
 	public void makeNullAVar(String variableName)
 			throws R4JScriptExecutionException {
 		String script = variableName + "<-" + "NA";
+		addLogScript(script);
 		try {
 			writeLog(script);
 			connection.eval(script);
@@ -486,6 +492,7 @@ public class R4JConnection implements IR4JConnection {
 	public boolean isNullVar(String variableName)
 			throws R4JScriptExecutionException {
 		String script = "is.na(" + variableName + ")";
+		addLogScript(script);
 		writeLog(script);
 		try {
 			REXP rexp = this.connection.eval(script);
@@ -512,6 +519,7 @@ public class R4JConnection implements IR4JConnection {
 	@Override
 	public R4JValue eval(String expression) throws R4JScriptExecutionException {
 		writeLog(expression);
+		addLogScript(expression);
 		R4JValue result = null;
 		try {
 			REXP value = this.connection.eval(expression);
@@ -671,7 +679,8 @@ public class R4JConnection implements IR4JConnection {
 		logError(errorMessage);
 
 	}
-
+	
+	@Deprecated
 	private void imageRelease() throws R4JScriptExecutionException,
 			R4JTransformerNotFoundException {
 		String expression = "dev.off()";
@@ -686,6 +695,7 @@ public class R4JConnection implements IR4JConnection {
 	 * @param errorMessage message to log
 	 */
 	public void logError(String errorMessage) {
+		logScript += errorMessage;
 		try {
 			if (log) {
 				rLog.write("#ERROR " + errorMessage);
@@ -731,6 +741,18 @@ public class R4JConnection implements IR4JConnection {
 			logger.error("Error creating an environment!!!!");
 		}
 		return null;
+	}
+
+	public String getLogScript() {
+		return logScript;
+	}
+
+	public void setLogScript(String logScript) {
+		this.logScript = logScript;
+	}
+
+	public void addLogScript(String expression){
+		logScript += "\n" + expression;
 	}
 
 }

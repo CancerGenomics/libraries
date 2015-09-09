@@ -175,5 +175,18 @@ public interface IR4JConnection {
 	 * @return
 	 */
 	public String newEnvironment();
+	
+	/**
+	 *  Get the logged script generated 
+	 *  @return logged script
+	 */
+	public String getLogScript();
+
+	
+	/**
+	 * Set the  
+	 * @param script
+	 */
+	public void setLogScript(String logScript);
 
 }
