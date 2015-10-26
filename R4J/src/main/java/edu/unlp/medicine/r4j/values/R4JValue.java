@@ -84,6 +84,9 @@ public abstract class R4JValue {
 		
 		try {
 			rList = this.getAdaptee().asList();
+			if (rList.isEmpty()) {
+				return new R4JStringDataMatrix(new ArrayList<String>(), new ArrayList<String>(), new String[0][0]);
+			}
 			int ncols = rList.size();
 			int nrows = rList.at(0).length();
 			String[][] matrix = new String[nrows][ncols];
