@@ -4,6 +4,10 @@ package edu.unlp.medicine.r4j.server;
  * Created by diego on 31/10/15.
  */
 public class ConnectionProperties {
+    /**
+     * No usa proxy, ni tiene ninguna propiedad especial la conexión
+     */
+    public static final ConnectionProperties NONE = new ConnectionProperties();
 
     private int proxyPort;
     private String proxyHost;
@@ -13,7 +17,8 @@ public class ConnectionProperties {
         this.proxyHost=proxy;
         this.proxyPort=port;
     }
-    public ConnectionProperties(){}
+
+    private ConnectionProperties(){}
 
     public String getProxyHost() {
         return proxyHost;

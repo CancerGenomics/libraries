@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.unlp.medicine.r4j.values.*;
 import org.rosuda.REngine.Rserve.RserveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +73,7 @@ public class R4JServer {
         start(properties);
     }
 
-    public R4JServer() throws R4JServerStartException {this(new ConnectionProperties());}
+    public R4JServer() throws R4JServerStartException {this(ConnectionProperties.NONE);}
 
     // //////////////////////////////////////////////////
     // //////////////////////API/////////////////////////
@@ -144,6 +145,8 @@ public class R4JServer {
         try {
             String url = properties.getProxyHost()+ ":" + properties.getProxyPort();
             connection.eval("Sys.setenv(http_proxy=\"" + url + "\")");
+            R4JStringValue result = (R4JStringValue) connection.eval("Sys.getenv(\"http_proxy\")");
+            LOGGER.debug("Proxy setted to R : "+result.asString());
         } catch (R4JScriptExecutionException e) {
             throw new RuntimeException("Cannot set proxy settings. Check your configuration", e);
         }
@@ -405,8 +408,13 @@ public class R4JServer {
 
     public static void main(String... args){
         try {
-            System.out.println(new R4JServer(new ConnectionProperties()).getDefaultConnection());
+            R4JConnection defaultConnection = new R4JServer(new ConnectionProperties("192.168.0.29", 9000)).getDefaultConnection();
+            System.out.println(defaultConnection);
+            R4JDataMatrix result = (R4JDataMatrix) defaultConnection.eval("source(\"https://bioconductor.org/biocLite.R\", verbose=TRUE)");
+            System.out.println("result del source a biolite "+result.asStrings());
         } catch (R4JServerStartException e) {
+            e.printStackTrace();
+        } catch (R4JScriptExecutionException e) {
             e.printStackTrace();
         }
     }
