@@ -146,7 +146,7 @@ public class R4JServer {
             String url = properties.getProxyHost()+ ":" + properties.getProxyPort();
             connection.eval("Sys.setenv(http_proxy=\"" + url + "\")");
             R4JStringValue result = (R4JStringValue) connection.eval("Sys.getenv(\"http_proxy\")");
-            LOGGER.debug("Proxy setted to R : "+result.asString());
+            LOGGER.info("Proxy setted to R : "+result.asString());
         } catch (R4JScriptExecutionException e) {
             throw new RuntimeException("Cannot set proxy settings. Check your configuration", e);
         }
