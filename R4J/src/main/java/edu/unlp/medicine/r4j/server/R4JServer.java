@@ -73,7 +73,9 @@ public class R4JServer {
         start(properties);
     }
 
-    public R4JServer() throws R4JServerStartException {this(ConnectionProperties.NONE);}
+    public R4JServer() throws R4JServerStartException {
+        this(ConnectionProperties.NONE);
+    }
 
     // //////////////////////////////////////////////////
     // //////////////////////API/////////////////////////
@@ -102,19 +104,13 @@ public class R4JServer {
 //			LOGGER.info("RServe satarted up on port " + port + ". Startup script: " + rcmd);
 //
             // Checks if connection is local. If not, set the remote conection. 
-            if (!isLocalConnection()) {
-                String host = System.getProperty("bioplat.rserve.host", null);
-                String port = System.getProperty("bioplat.rserve.port", null);
-                // If values are not setted up, start local server.
-                if (host == null || port == null) {
-                    LOGGER.warn("bioplat.rserve.host or bioplat.rserve.port are not present. Setting up local conexion ");
-                    startRServeProcess();
-                } else {
-                    RServeConfigurator.getInstance().setHost(host);
-                    RServeConfigurator.getInstance().setPort(Integer.parseInt(port));
-                }
+            String host = System.getProperty("bioplat.rserve.host", null);
+            String port = System.getProperty("bioplat.rserve.port", null);
+            if (!isLocalConnection() && validParameters(host, port)) {
+                RServeConfigurator.getInstance().setHost(host);
+                RServeConfigurator.getInstance().setPort(Integer.parseInt(port));
             } else {
-                startRServeProcess();
+                startRServeProcess(properties);
             }
             initializeR(properties);
 //
@@ -130,23 +126,28 @@ public class R4JServer {
         }
     }
 
+    private boolean validParameters(String host, String port) {
+        if (host == null || port == null)
+            LOGGER.warn("bioplat.rserve.host or bioplat.rserve.port are not present.");
+        return host != null && port != null;
+    }
+
     private void initializeR(ConnectionProperties properties) throws R4JCreatConnectionException, RequiredLibraryNotPresentException {
         createDefaultConnection();
 //FIXME determinar si es necesario ahora o se puede levantar el server ya configurado
         setTheRLibraryInsideR4JDistributionAsTheOnlyRLibFolder();
 //FIXME ya no es necesario esto con el server remoto, ya que ya está configurado!
         //calculateRequiredRLibrariesNotInstalledAndLoadInstalled();
-        if (properties.isUsingProxy())
-            setProxy(properties);
+
     }
 
     private void setProxy(ConnectionProperties properties) {
         R4JConnection connection = this.getDefaultConnection();
         try {
-            String url = properties.getProxyHost()+ ":" + properties.getProxyPort();
+            String url = properties.getProxyHost() + ":" + properties.getProxyPort();
             connection.eval("Sys.setenv(http_proxy=\"" + url + "\")");
             R4JStringValue result = (R4JStringValue) connection.eval("Sys.getenv(\"http_proxy\")");
-            LOGGER.info("Proxy setted to R : "+result.asString());
+            LOGGER.info("Proxy set to R : " + result.asString());
         } catch (R4JScriptExecutionException e) {
             throw new RuntimeException("Cannot set proxy settings. Check your configuration", e);
         }
@@ -243,7 +244,7 @@ public class R4JServer {
      * @throws InterruptedException
      */
 
-    private String startRServeProcess() throws IOException, InterruptedException {
+    private String startRServeProcess(ConnectionProperties properties) throws IOException, InterruptedException {
         try {
             // FIXME parametrizar que el puerto de Rserve
             // ATENCIóN: en linux es fijo, ya que Rserve
@@ -263,6 +264,8 @@ public class R4JServer {
             String rcmd = OSDependentConstants.PATH_TO_R + " --save --restore -q -e library('Rserve');Rserve(port=" + RServeConfigurator.getInstance().getPort() + ")";
             rServeOSProcess = Runtime.getRuntime().exec(rcmd);
             LOGGER.debug("Starting Rserve with command: " + rcmd);
+            if (properties.isUsingProxy())
+                setProxy(properties);
             rServeOSProcess.waitFor();
             LOGGER.debug("Command to start rserve terminated");
             return rcmd;
@@ -405,13 +408,12 @@ public class R4JServer {
     }
 
 
-
-    public static void main(String... args){
+    public static void main(String... args) {
         try {
             R4JConnection defaultConnection = new R4JServer(new ConnectionProperties("192.168.0.29", 9000)).getDefaultConnection();
             System.out.println(defaultConnection);
             R4JDataMatrix result = (R4JDataMatrix) defaultConnection.eval("source(\"https://bioconductor.org/biocLite.R\", verbose=TRUE)");
-            System.out.println("result del source a biolite "+result.asStrings());
+            System.out.println("result del source a biolite " + result.asStrings());
         } catch (R4JServerStartException e) {
             e.printStackTrace();
         } catch (R4JScriptExecutionException e) {
